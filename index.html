@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thornhollow Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --panel:rgba(244,238,222,.94);--ink:#22261F;--ink2:#5A6152;--line:#22261F;--btn:#E6E1D2;--btnh:#D8D2C0;--accent:#8A2D5A;--hp:#B8433A;--good:#3D7A3A;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--panel:rgba(24,24,34,.92);--ink:#ECE6D6;--ink2:#A9A391;--line:#ECE6D6;--btn:#2C2F38;--btnh:#3A3E49;--accent:#E58AB8;--hp:#E2665B;--good:#7CC274;}}
+:root[data-theme="dark"]{--panel:rgba(24,24,34,.92);--ink:#ECE6D6;--ink2:#A9A391;--line:#ECE6D6;--btn:#2C2F38;--btnh:#3A3E49;--accent:#E58AB8;--hp:#E2665B;--good:#7CC274;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:#14161f;color:var(--ink);font-family:'Pixelify Sans',ui-monospace,Menlo,monospace;overflow:hidden;user-select:none;-webkit-user-select:none}
+#app{position:relative;height:100%;overflow:hidden}
+#game{position:absolute;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:crosshair}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:0;box-shadow:3px 3px 0 rgba(0,0,0,.35)}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.nl{position:absolute;left:0;top:0;text-align:center;font-size:13px;line-height:1.1;color:#F4EEDC;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000,1px 0 0 #000;white-space:nowrap}
+.nl small{display:block;font-size:11px;opacity:.9}
+.nl .bar{width:56px;height:5px;margin:3px auto 0;background:#000;border:1px solid #000}
+.nl .bar i{display:block;height:100%;background:#E2665B}
+#prompt{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);padding:6px 12px;font-size:15px;pointer-events:none;max-width:min(520px,90vw);text-align:center}
+#prompt:empty{display:none}
+#hud{position:absolute;top:12px;left:12px;padding:10px 14px;max-width:min(360px,58vw);pointer-events:none}
+#clock{font-size:21px;font-weight:700;line-height:1.1}
+#cls{font-size:14px;margin-top:4px;line-height:1.35}
+#obj{display:none}#pts{font-size:13px;margin-top:6px;color:var(--ink2);pointer-events:auto;cursor:pointer;position:relative}#pts b{color:var(--ink)}.fl{position:absolute;left:100%;margin-left:6px;top:0;font-weight:700;animation:flu 1.4s ease-out forwards}.fl.up{color:var(--good)}.fl.dn{color:var(--hp)}@keyframes flu{to{transform:translateY(-14px);opacity:0}}
+#obj:empty{display:none}
+#board{position:absolute;top:50%;left:12px;transform:translateY(-50%);padding:10px 12px;min-width:160px;pointer-events:none;display:none}#board.show{display:block}
+#board h3{font-weight:700;font-size:16px;margin:0 0 4px}
+#cupline{font-size:12px;color:var(--ink2);margin:0 0 6px}
+.hrow{display:flex;align-items:center;gap:8px;font-size:15px;padding:2px 0}
+.hrow i{width:12px;height:12px;display:inline-block;border:1px solid #000}
+.hrow span{flex:1}.hrow b{font-weight:600;font-variant-numeric:tabular-nums}
+.hrow.me span{font-weight:700}
+.cups{font-style:normal;font-size:11px;background:#C9962E;color:#fff;padding:0 4px;margin-left:4px}
+#mm{position:absolute;top:12px;right:12px;padding:6px;width:208px;display:none}#mm.on{display:block}#mapbtn{position:absolute;top:12px;right:12px;font-size:14px;padding:6px 10px}#mapbtn.off{display:none}
+#mmc{display:block;width:192px;height:192px;image-rendering:pixelated}
+#room{display:none}#mm{cursor:pointer}#mm .hint{font-size:12px;text-align:center;margin-top:4px;color:var(--ink2)}
+#hp{position:absolute;left:12px;bottom:14px;padding:8px 12px;width:220px;pointer-events:none;display:none}#hp.show{display:block}
+#hp .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2)}
+#hp .track{height:10px;background:rgba(0,0,0,.25);margin-top:4px;border:1px solid #000}
+#hp .fill{height:100%;background:var(--hp)}
+#sinfo{display:none;position:absolute;left:50%;bottom:86px;transform:translateX(-50%);padding:6px 12px;font-size:14px;line-height:1.4;text-align:center;width:max-content;max-width:min(600px,92vw);pointer-events:none}
+#sinfo.show{display:block}#sinfo:empty{display:none}#sinfo b{font-weight:700}#sinfo .nx{color:var(--accent)}
+#bar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px;padding:6px}
+.slot{position:relative;width:78px;height:58px;border:2px solid var(--line);background:var(--btn);color:var(--ink);font:inherit;font-size:13px;line-height:1.1;padding:17px 4px 4px;cursor:pointer;overflow:hidden;text-align:center}
+.slot .k{position:absolute;top:2px;left:5px;font-size:11px;color:var(--ink2)}
+.slot .lv{position:absolute;top:2px;right:4px;font-size:10px;color:var(--ink2)}
+.slot .cd{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);pointer-events:none}
+.slot.sel{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.slot.lock{opacity:.5;font-style:italic}
+.slot.temp{border-style:dashed}
+.slot.l2 .nm{color:#C9962E;font-weight:700}
+.slot .xpb{position:absolute;left:4px;right:4px;bottom:3px;height:4px;background:rgba(0,0,0,.3)}.slot .xpb i{display:block;height:100%;width:0;background:#3fa7d6}
+#toasts{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;width:min(520px,60vw)}
+.toast{padding:7px 14px;font-size:15px;line-height:1.35;text-align:center}
+#toasts{top:auto;bottom:160px}
+#banner{position:absolute;top:18%;left:50%;transform:translateX(-50%);text-align:center;color:#F4EEDC;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;pointer-events:none;opacity:0;transition:opacity .4s}
+#banner.on{opacity:1}#banner .t{font-size:34px;font-weight:700;line-height:1.1}#banner .s{font-size:15px;margin-top:4px;max-width:70vw}
+.dl{position:absolute;left:0;top:0;font-size:13px;color:#fff6d8;background:rgba(20,18,28,.78);border:1px solid #000;padding:2px 6px;white-space:nowrap;pointer-events:none}
+.dl.q{color:#bdb6a2}
+#bigmap{position:absolute;inset:0;background:rgba(10,12,20,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px}#bigmap.on{display:flex}#bigmap canvas{image-rendering:pixelated;border:2px solid #ECE6D6;max-width:94vw;max-height:84vh}#bigmap .cap{color:#ECE6D6;font-size:14px}
+.toast.plus{border-color:var(--good)}.toast.minus{border-color:var(--hp)}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,20,.6);padding:16px}
+#overlay.hide{display:none}
+.card{max-width:520px;width:100%;padding:22px 24px;max-height:100%;overflow:auto}
+.card h1{font-weight:700;font-size:36px;line-height:1.05;margin:0 0 10px}
+.card h2{font-weight:700;font-size:26px;margin:0 0 8px}
+.card p{font-size:16px;line-height:1.55;margin:0 0 12px}
+.card .keys{font-size:14px;line-height:1.7;color:var(--ink2);margin:0 0 16px}
+.card .keys b{color:var(--ink);font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:16px;color:var(--ink);background:var(--btn);border:2px solid var(--line);padding:8px 16px;cursor:pointer}
+button:hover{background:var(--btnh)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:#fff}
+.crest{font-size:38px;font-weight:700;text-align:center;margin:10px 0}
+.book{height:110px;display:flex;align-items:center;justify-content:center;margin:6px 0 12px}
+.book div{width:72px;height:96px;background:#6b2a1e;box-shadow:inset -8px 0 0 #4a1c14,4px 4px 0 #000;animation:flip .4s steps(2) infinite alternate}
+@keyframes flip{to{transform:scaleX(.6)}}
+#touch{display:none}
+.coarse #touch{display:block}
+#joy{position:absolute;left:18px;bottom:110px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)}
+#joy i{position:absolute;left:40px;top:40px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.45)}
+.tb{position:absolute;width:64px;height:64px;border-radius:50%;background:rgba(20,20,30,.6);border:2px solid rgba(255,255,255,.4);color:#fff;font-size:14px;padding:0}
+#tcast{right:20px;bottom:120px;width:80px;height:80px;background:rgba(138,45,90,.8)}
+#tuse{right:112px;bottom:110px}#tduel{right:30px;bottom:212px}
+@media (max-width:760px){
+  #board{top:auto;bottom:150px;transform:none;min-width:0;padding:6px 8px}.hrow{font-size:13px}#board h3,#cupline{display:none}
+  #mm{width:130px;padding:5px}#mmc{width:116px;height:116px}#room{font-size:13px}
+  #hud{max-width:52vw;padding:8px 10px}#clock{font-size:16px}#cls,#obj{font-size:12px}
+  .slot{width:52px;height:46px;font-size:11px;padding:14px 2px 2px}
+  #hp{width:150px;bottom:auto;top:150px;padding:6px 8px}
+  #bar{bottom:8px}#sinfo{bottom:62px;font-size:12px;padding:4px 8px}
+  .coarse #board{bottom:auto;top:200px}#prompt{bottom:120px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+  <div id="labels"></div>
+  <div id="prompt" class="panel"></div>
+  <div id="hud" class="panel"><div id="clock"></div><div id="cls"></div><div id="obj"></div><div id="pts" title="Show house standings"></div></div><div id="banner"><div class="t"></div><div class="s"></div></div><div id="doorlabels" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+  <div id="board" class="panel"><h3>House points</h3><div id="cupline"></div><div id="rows"></div></div>
+  <div id="mm" class="panel" title="Open the full map"><canvas id="mmc" width="196" height="196"></canvas><div id="room"></div><div class="hint">M to hide. Click for full map.</div></div><button id="mapbtn" class="panel">Map (M)</button>
+  <div id="hp" class="panel"><div class="lab"><span id="hpl">Health</span><span id="hpn">100</span></div><div class="track"><div class="fill" id="hpf"></div></div></div>
+  <div id="sinfo" class="panel"></div><div id="bar" class="panel"></div>
+  <div id="toasts"></div>
+  <div id="touch"><div id="joy"><i></i></div><button class="tb" id="tcast">Cast</button><button class="tb" id="tuse">Use</button><button class="tb" id="tduel">Duel</button></div>
+  <div id="bigmap"><canvas id="bmc" width="720" height="720"></canvas><div class="cap" id="bmcap">Full map. Press M or tap anywhere to close.</div></div><div id="fade"></div>
+  <div id="overlay"><div class="card panel" id="card"><h2>Loading...</h2></div></div>
+</div>
+<script>
+// ================= DATA =================
+const SP=34;
+const R={
+gate:{n:"Gatehouse",c:3,r:5,z:"ground",d:"An iron portcullis between two stone foxes."},
+bridge:{n:"Fox bridge",c:3,r:6,z:"ground",d:"A stone bridge over a gorge."},
+road:{n:"Lantern road",c:3,r:7,z:"ground",d:"The lanterns only light the way back."},
+foyer:{n:"Foyer of echoes",c:3,r:4,z:"hall",d:"Everything you say repeats, slightly reworded."},
+court:{n:"Lantern courtyard",c:3,r:3,z:"hall",d:"Paper lanterns drift overhead in a slow circle.",item:"lantern"},
+refect:{n:"Grand dining hall",c:2,r:3,z:"hall",d:"Four long house tables, banners overhead, and the house cup on the dais."},
+kitchen:{n:"Rhyming kitchen",c:2,r:4,z:"hall",d:"The cook answers only in rhyme."},
+lib:{n:"Mirror library",c:4,r:3,z:"hall",d:"A reflected note: the clock's north wall hides a room."},
+scrip:{n:"Scriptorium",c:4,r:4,z:"hall",d:"Quills copy texts on their own."},
+apoth:{n:"Apothecary",c:5,r:4,z:"hall",d:"Herbs, tonics, and two very clean beds."},
+yard:{n:"Practice yard",c:5,r:3,z:"hall",d:"A walled sand yard for spell practice."},
+doors:{n:"Corridor of doors",c:3,r:2,z:"hall",d:"Thirty-nine of the doors open onto brick."},
+warden:{n:"Warden's study",c:4,r:2,z:"hall",d:"A portrait of the founder, turned to face the wall."},
+clock:{n:"Clocktower",c:3,r:1,z:"tower",d:"The clock runs backward on Tuesdays."},
+bell:{n:"Bell tower",c:4,r:1,z:"tower",d:"Seven bells, each tuned to a different spell."},
+vane:{n:"Weathervane loft",c:2,r:1,z:"tower",d:"The copper heron points at whoever is lying."},
+star:{n:"Star chart room",c:3,r:0,z:"hidden",d:"Silver ink marks every secret passage in the academy."},
+light:{n:"Lighthouse",c:0,r:1,z:"ground",d:"Its lamp lights itself when ships are lost."},
+seawall:{n:"Sea wall walk",c:0,r:3,z:"ground",d:"The gulls here steal words."},
+cliff:{n:"Cliff stairs",c:0,r:4,z:"ground",d:"The count of stairs never matches."},
+docks:{n:"Sunken docks",c:0,r:6,z:"ground",d:"A rowboat tied with a silver chain."},
+river:{n:"Underground river",c:1,r:6,z:"under",d:"Carvings shift when you look away."},
+cata:{n:"Catacombs of keys",c:2,r:6,z:"under",d:"Keys to doors that no longer exist."},
+cellar:{n:"Alchemy cellars",c:1,r:4,z:"under",d:"Something in jar 47 is tapping on the glass."},
+vault:{n:"Bottle vault",c:1,r:5,z:"under",d:"Each bottle holds a single sound.",item:"key"},
+garden:{n:"Glasshouse gardens",c:5,r:5,z:"ground",d:"Plants that turn to follow you."},
+orchard:{n:"Beehive orchard",c:6,r:5,z:"ground",d:"The bees correct your whistling."},
+mill:{n:"Old windmill",c:6,r:4,z:"ground",d:"It grinds weather instead of grain."},
+stones:{n:"Standing stones",c:7,r:4,z:"ground",d:"One is always missing when you count."},
+moon:{n:"Moonwell",c:7,r:3,z:"ground",d:"It reflects the moon even at noon."},
+tarn:{n:"Frozen tarn",c:7,r:1,z:"ground",d:"A frozen mountain lake.",item:"seal"},
+marsh:{n:"Mist marsh",c:5,r:6,z:"ground",d:"The paths rearrange overnight."},
+cr_wolves:{n:"Wolves' den",c:2,r:0,z:"common",house:"wolves",d:"Grey stone, a deep hearth, and a pack of mismatched armchairs."},
+cr_herons:{n:"Herons' roost",c:4,r:0,z:"common",house:"herons",d:"High windows, quiet corners, and a view over the sea."},
+cr_foxes:{n:"Foxes' burrow",c:2,r:2,z:"common",house:"foxes",d:"Low lamps, warm rugs, and more hiding places than anyone admits."},
+cr_bears:{n:"Bears' lodge",c:5,r:2,z:"common",house:"bears",d:"Heavy timber, a roaring fire, and a pantry nobody guards."},
+lake:{n:"Lakeshore",c:8,r:3,z:"ground",d:"Black water stretches to the mountains. Something large moves under the surface."},
+thorn:{n:"Thornwood",c:6,r:6,z:"ground",d:"The edge of the dark forest. Students are told not to come here."},
+hollow:{n:"Hollow oak",c:6,r:7,z:"ground",d:"An ancient oak, hollow as a cathedral, ringed with glowing mushrooms."}
+};
+const E=[["gate","foyer"],["gate","bridge"],["bridge","road"],["gate","garden"],["bridge","marsh"],["marsh","garden"],["garden","orchard"],["orchard","mill"],["mill","apoth"],["mill","stones"],["stones","moon"],["moon","tarn"],["foyer","court"],["foyer","kitchen"],["foyer","scrip"],["court","refect"],["court","lib"],["court","doors"],["refect","kitchen"],["lib","scrip"],["lib","yard"],["scrip","apoth"],["yard","apoth"],["doors","warden","seal"],["doors","clock"],["clock","bell"],["clock","vane"],["clock","star",null,1],["vane","light"],["light","seawall"],["seawall","refect"],["seawall","cliff"],["cliff","docks"],["docks","river","lantern"],["kitchen","cellar"],["cellar","vault"],["vault","river","lantern"],["river","cata","key"],["vane","cr_wolves","house:wolves"],["bell","cr_herons","house:herons"],["doors","cr_foxes","house:foxes"],["yard","cr_bears","house:bears"],["moon","lake"],["lib","warden",null,"bookcase"],["cellar","cliff",null,"tunnel"],["orchard","thorn"],["thorn","hollow"]];
+const ITEMS={lantern:"loose lantern",key:"brass key",seal:"frost seal"};
+function canOpen(l){return l.startsWith("house:")?S.house===l.slice(6):S.items.includes(l)}
+function lockMsg(l){return l.startsWith("house:")?"This door only opens for the "+HOUSES[l.slice(6)].n+".":LOCKMSG[l]}
+const LOCKMSG={lantern:"Pitch black. You need a light to go further.",key:"An iron gate with a brass lock.",seal:"A door frozen solid. Something colder than ice might open it."};
+const HOUSES={
+  wolves:{n:"Wolves",c:"#8796C4",hex:0x4d5b85,line:"A low howl rises off the page. The pack has claimed you."},
+  herons:{n:"Herons",c:"#5FB8B0",hex:0x2b7470,line:"Paper wings unfold from the page and settle on your shoulder."},
+  foxes:{n:"Foxes",c:"#E07D45",hex:0xa04a22,line:"A russet tail flicks across the page and vanishes into the margin."},
+  bears:{n:"Bears",c:"#C4985A",hex:0x6b4c2a,line:"The book thumps shut, heavy as a paw, then falls open on your name."}
+};
+const HK=Object.keys(HOUSES);
+const SPELLS={
+  spark:{n:"Spark",cd:.45,dmg:9,spd:32,col:0xfff1a0,type:"bolt",size:.16},
+  ward:{n:"Ward",cd:8,type:"self",dur:3},
+  ember:{n:"Ember",cd:1.5,dmg:22,spd:22,col:0xff6a2a,type:"bolt",size:.3},
+  mend:{n:"Mend",cd:10,type:"self",heal:35},
+  gust:{n:"Gust",cd:4,dmg:7,spd:28,col:0xd8f5e6,type:"bolt",size:.26,push:7},
+  frost:{n:"Frost bind",cd:6,dmg:5,spd:24,col:0x9fe3ff,type:"bolt",size:.22,freeze:2.5}
+};
+const ORDER=["spark","ward","ember","mend","gust","frost"];
+const ROMAN=["","","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"],MAXLV=20;
+function SPX(id,lv=1){lv=Math.max(1,Math.min(MAXLV,lv|0));const b=SPELLS[id],o=Object.assign({},b,{lv,n:b.n+(lv>1?" "+ROMAN[lv]:"")}),k=lv-1;
+  if(id==="spark"){o.dmg=9+k*1.2;o.cd=Math.max(.2,.45-k*.016);o.spd=32+k*1.5;if(lv>=2)o.spread=lv>=11?7:lv>=6?5:3}
+  else if(id==="ward"){o.dur=3+k*.35;o.cd=Math.max(3,8-k*.33);if(lv>=2)o.reflect=1;o.hits=lv>=12?3:lv>=5?2:1;o.rboost=lv>=16?4:lv>=8?2:0}
+  else if(id==="ember"){o.dmg=22+k*2.5;if(lv>=2){o.splash=Math.min(6.5,3.5+(lv-2)*.25);o.splashDmg=14+(lv-2)*1.5;o.size=.36}}
+  else if(id==="mend"){o.heal=35+k*5;o.cd=Math.max(4,10-k*.33);if(lv>=2)o.hot=6+lv;if(lv>=12)o.cleanse=1}
+  else if(id==="gust"){o.dmg=7+k*1.3;o.push=Math.min(14,7+k*.6);if(lv>=2){o.stun=1.5+(lv-2)*.15;o.size=.32}if(lv>=12)o.wide=3}
+  else if(id==="frost"){o.dmg=5+k;o.freeze=Math.min(7,2.5+k*.3);if(lv>=6)o.aoe=lv>=14?4.5:3}
+  return o}
+function descFor(id,lv){const o=SPX(id,lv),r=x=>Math.round(x*10)/10;switch(id){
+  case"spark":return r(o.dmg)+" damage per bolt"+(o.spread?", "+o.spread+" bolts at once":"");
+  case"ward":return"blocks "+o.hits+" hit"+(o.hits>1?"s":"")+" for "+r(o.dur)+"s"+(o.reflect?" and throws spells back"+(o.rboost?" "+o.rboost+" levels stronger":""):"");
+  case"ember":return r(o.dmg)+" damage"+(o.splash?", explodes for "+r(o.splashDmg)+" within "+r(o.splash)+"m":"");
+  case"mend":return"heals "+o.heal+(o.hot?", then "+o.hot+" per second for 5s":"")+(o.cleanse?", breaks freezes":"");
+  case"gust":return r(o.dmg)+" damage, "+r(o.push)+"m knockback"+(o.stun?", dazes for "+r(o.stun)+"s":"")+(o.wide?", also blasts anyone within 3m":"");
+  case"frost":return r(o.dmg)+" damage, freezes for "+r(o.freeze)+"s"+(o.aoe?", also freezes anyone within "+o.aoe+"m":"")}}
+const CLASSES=[
+  {h:9,s:"Wardcraft",room:"yard",prof:"Professor Brannock",spell:"ward",task:"Ward each of the three braziers. Aim at one and cast Ward."},
+  {h:11,s:"Alchemy",room:"cellar",prof:"Professor Quillon",spell:"ember",task:"Light the three floating wicks with Ember."},
+  {h:13,s:"Herb lore",room:"garden",prof:"Professor Fennimore",spell:"mend",task:"Aim at each wilted bloom and cast Mend."},
+  {h:15,s:"Weather lore",room:"vane",prof:"Professor Gale",spell:"gust",task:"Scatter the three storm puffs with Gust."},
+  {h:17,s:"Stillness",room:"clock",prof:"Professor Tenn",spell:"frost",task:"Freeze the three drifting gears with Frost bind."}
+];
+const CLASSFOR={};CLASSES.forEach((c,i)=>CLASSFOR[c.spell]=i);
+const NAMES=["Mara Venn","Tobin Ash","Iris Calloway","Dex Morrow","Juniper Hale","Rowan Pike","Saffi Lorne","Cassius Bell","Wren Odell","Milo Thatch","Nell Arden","Otto Crane","Ivy Marsh","Felix Grant","Lena Holt","Arlo Finch","Maeve Dunn","Quinn Rook","Tessa Vale","Jasper Hollis","Nora Pratt","Elias Thorne","Poppy Lark","Hugo Barrow"];
+const SAVE="thornhollow-fp-v1";
+
+// ================= STATE =================
+function fresh(){const p={};HK.forEach(h=>p[h]=20+Math.floor(Math.random()*30));return{cur:"gate",seen:["gate"],items:[],found:false,house:null,points:p,spells:["spark"],lvl:{},wins:0,cups:{},xp:{},secrets:[],day:1,minute:480,att:{day:1,checked:[],ended:[],warned:[]},hp:100}}
+function load(){try{const v=JSON.parse(localStorage.getItem(SAVE));if(v&&R[v.cur]&&v.points&&v.spells)return v}catch(e){}return null}
+let S=load()||fresh();if(!S.lvl)S.lvl={};if(S.wins==null)S.wins=0;if(!S.cups)S.cups={};if(!S.xp)S.xp={};if(!S.secrets)S.secrets=[];if(S.winBase==null)S.winBase=S.wins||0;const hadSave=!!load();
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+
+// ================= HELPERS =================
+const X=k=>(R[k].c-3.5)*SP, Z=k=>(R[k].r-3.5)*SP;
+const isLow=k=>R[k].z==="ground", isUnder=k=>R[k].z==="under", isOpen=k=>isLow(k)||k==="court"||k==="yard";
+const half=k=>k==="refect"?15:isLow(k)?12:11, wallH=k=>isLow(k)?1.3:isUnder(k)?6:k==="refect"?11:9;
+function dirTo(a,b){const A=R[a],B=R[b];if(A.c===B.c)return B.r<A.r?"N":"S";return B.c<A.c?"W":"E"}
+const DV={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]};
+function edgeAll(a,b){return E.find(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a))}
+const on=e=>!e[3]||(e[3]===1?S.found:(S.secrets||[]).includes(e[3]));
+function nbrs(a){return E.filter(e=>on(e)&&e.includes(a)).map(e=>e[0]===a?e[1]:e[0])}
+function npcNbrs(a){return E.filter(e=>!e[2]&&!e[3]&&e.includes(a)).map(e=>e[0]===a?e[1]:e[0])}
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function fmt(m){let h=Math.floor(m/60),mm=Math.floor(m%60);const ap=h>=12?"pm":"am";h=h%12||12;return h+":"+String(mm).padStart(2,"0")+" "+ap}
+
+
+// ================= 2D ENGINE =================
+const $=id=>document.getElementById(id);
+const PPM=8,CSZ=256;
+const cv=$("game"),g=cv.getContext("2d");
+const coarse=matchMedia("(pointer: coarse)").matches;if(coarse)$("app").classList.add("coarse");
+let IW=400,IH=225,SC=3;
+function resize(){const w=innerWidth,h=innerHeight;SC=Math.max(2,Math.round(Math.min(w,h)/(coarse?165:190)));IW=Math.ceil(w/SC);IH=Math.ceil(h/SC);cv.width=IW;cv.height=IH;cv.style.width=IW*SC+"px";cv.style.height=IH*SC+"px";g.imageSmoothingEnabled=false}
+addEventListener("resize",resize);resize();
+const P8=v=>Math.round(v*PPM);
+const hex=n=>"#"+n.toString(16).padStart(6,"0");
+function shade(h,f){const n=parseInt(h.slice(1),16);let r=(n>>16)&255,gg=(n>>8)&255,b=n&255;r=Math.max(0,Math.min(255,r*f|0));gg=Math.max(0,Math.min(255,gg*f|0));b=Math.max(0,Math.min(255,b*f|0));return"#"+((r<<16)|(gg<<8)|b).toString(16).padStart(6,"0")}
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+// tiles
+function mkTile(size,base,draw){const t=document.createElement("canvas");t.width=t.height=size;const c=t.getContext("2d");c.fillStyle=base;c.fillRect(0,0,size,size);draw(c,size);return t}
+const dots=(c,s,n,cols,w=1)=>{for(let i=0;i<n;i++){c.fillStyle=cols[i%cols.length];c.fillRect((rnd()*s)|0,(rnd()*s)|0,w,1)}};
+const TILE={
+  grass:mkTile(32,"#4f7a3a",(c,s)=>{dots(c,s,140,["#5f8c44","#436a31","#6a9a4c","#3d5f2c"]);for(let i=0;i<10;i++){c.fillStyle="#76a656";const x=rnd()*s|0,y=rnd()*s|0;c.fillRect(x,y,1,2)}}),
+  forest:mkTile(32,"#2c4528",(c,s)=>dots(c,s,120,["#365632","#233a20","#3f6236"])),
+  stone:mkTile(16,"#7f7a72",(c,s)=>{dots(c,s,26,["#8a857d","#736e67"]);c.fillStyle="#5a5650";c.fillRect(0,0,16,1);c.fillRect(0,8,16,1);c.fillRect(0,0,1,8);c.fillRect(8,8,1,8)}),
+  rockF:mkTile(16,"#58555a",(c,s)=>dots(c,s,40,["#625f64","#4c494e","#6b676c"],2)),
+  wood:mkTile(16,"#7a5232",(c,s)=>{c.fillStyle="#5f3e24";for(let y=0;y<16;y+=4)c.fillRect(0,y,16,1);c.fillRect(5,1,1,3);c.fillRect(12,5,1,3);c.fillRect(2,9,1,3);c.fillRect(9,13,1,3);dots(c,s,10,["#86603e"])}),
+  path:mkTile(16,"#8d7350",(c,s)=>dots(c,s,40,["#9a7f5a","#7e6646","#a89a80"])),
+  sand:mkTile(16,"#c9b086",(c,s)=>dots(c,s,40,["#d6bf96","#b9a077"])),
+  water:mkTile(32,"#2c5a7e",(c,s)=>{dots(c,s,40,["#346a92","#264f70"],2);c.fillStyle="#5d93b8";for(let i=0;i<6;i++){c.fillRect(rnd()*s|0,rnd()*s|0,3,1)}}),
+  ice:mkTile(16,"#cfe7f2",(c,s)=>{dots(c,s,20,["#e6f4fa","#b9dbea"]);c.fillStyle="#ffffff";c.fillRect(3,4,4,1);c.fillRect(9,11,3,1)}),
+  marsh:mkTile(16,"#3b4a33",(c,s)=>dots(c,s,40,["#45573c","#33402c","#2f5a52"])),
+  brick:mkTile(16,"#8e877c",(c,s)=>{dots(c,s,18,["#978f84","#837c72"]);c.fillStyle="#5e5850";for(let y=0;y<16;y+=4){c.fillRect(0,y,16,1);const o=(y/4)%2?4:0;c.fillRect(o,y,1,4);c.fillRect(o+8,y,1,4)}}),
+  lowwall:mkTile(16,"#a8a194",(c,s)=>{dots(c,s,18,["#b2ab9e","#9a9386"]);c.fillStyle="#7c766b";for(let y=0;y<16;y+=4){c.fillRect(0,y,16,1);const o=(y/4)%2?4:0;c.fillRect(o,y,1,4);c.fillRect(o+8,y,1,4)}}),
+  rockwall:mkTile(16,"#48454a",(c,s)=>dots(c,s,40,["#545156","#3c3a3e"],2)),
+  gold:mkTile(16,"#7f6a3a",(c,s)=>dots(c,s,30,["#d9ad45","#b08a3a"])),
+  marble:mkTile(16,"#e4dfd4",(c,s)=>{c.fillStyle="#c6bfb2";c.fillRect(0,0,8,8);c.fillRect(8,8,8,8);dots(c,s,10,["#d6d0c4","#b3ac9f"])}),
+  darkwood:mkTile(16,"#4f3420",(c,s)=>{c.fillStyle="#3a2414";for(let y=0;y<16;y+=4)c.fillRect(0,y,16,1);c.fillRect(6,1,1,3);c.fillRect(13,5,1,3);c.fillRect(3,9,1,3);c.fillRect(10,13,1,3);dots(c,s,10,["#5e3f28"])}),
+  terracotta:mkTile(16,"#a4553a",(c,s)=>{dots(c,s,16,["#b0603f","#94492f"]);c.fillStyle="#6e3524";c.fillRect(0,0,16,1);c.fillRect(0,0,1,16);c.fillRect(8,0,1,16);c.fillRect(0,8,16,1)}),
+  greencarpet:mkTile(16,"#2f5a3a",(c,s)=>{dots(c,s,24,["#376a44","#284d32"]);c.fillStyle="#c9a24a";c.fillRect(7,7,2,2)}),
+  checker:mkTile(16,"#c9b48a",(c,s)=>{c.fillStyle="#a88a62";c.fillRect(0,0,8,8);c.fillRect(8,8,8,8);dots(c,s,10,["#b9a47a","#7a5a38"])}),
+  whitetile:mkTile(16,"#e8e6e0",(c,s)=>{c.fillStyle="#b9b5ab";c.fillRect(0,0,16,1);c.fillRect(0,0,1,16);c.fillRect(8,0,1,16);c.fillRect(0,8,16,1);c.fillStyle="#7fb6c9";c.fillRect(4,4,1,1)}),
+  redcarpet:mkTile(16,"#8a2430",(c,s)=>{dots(c,s,20,["#9a2c38","#741c26"]);c.fillStyle="#d9ad45";c.fillRect(7,3,2,1);c.fillRect(6,4,4,1);c.fillRect(7,5,2,1)}),
+  purplecarpet:mkTile(16,"#4b2f5e",(c,s)=>{dots(c,s,22,["#573a6c","#3e264e"]);c.fillStyle="#c9a24a";c.fillRect(0,0,16,1)}),
+  bluetile:mkTile(16,"#4c6a8c",(c,s)=>{dots(c,s,14,["#56769a","#42607e"]);c.fillStyle="#34495f";c.fillRect(0,0,16,1);c.fillRect(0,0,1,16);c.fillRect(0,8,16,1);c.fillRect(8,0,1,16)})
+};
+function patFor(c,name){c._pc=c._pc||{};return c._pc[name]||(c._pc[name]=c.createPattern(TILE[name],"repeat"))}
+function rect(c,x,z,w,d,col){c.fillStyle=col;const X0=P8(x),Y0=P8(z);c.fillRect(X0,Y0,Math.max(1,P8(x+w)-X0),Math.max(1,P8(z+d)-Y0))}
+function rectC(c,x,z,w,d,col){rect(c,x-w/2,z-d/2,w,d,col)}
+function prect(c,x,z,w,d,name){c.fillStyle=patFor(c,name);const X0=P8(x),Y0=P8(z);c.fillRect(X0,Y0,Math.max(1,P8(x+w)-X0),Math.max(1,P8(z+d)-Y0))}
+function pc(c,x,z,r,col){const X0=P8(x),Y0=P8(z),Rr=Math.max(1,Math.round(r*PPM));c.fillStyle=col;for(let dy=-Rr;dy<Rr;dy++){const w=Math.round(Math.sqrt(Rr*Rr-(dy+.5)*(dy+.5)));if(w>0)c.fillRect(X0-w,Y0+dy,w*2,1)}}
+function pring(c,x,z,r,col,t=1){const X0=P8(x),Y0=P8(z),Rr=Math.max(2,Math.round(r*PPM));c.fillStyle=col;for(let dy=-Rr;dy<Rr;dy++){const w=Math.round(Math.sqrt(Rr*Rr-(dy+.5)*(dy+.5))),wi=Math.max(0,Math.round(Math.sqrt(Math.max(0,(Rr-t)*(Rr-t)-(dy+.5)*(dy+.5)))));if(w>0){c.fillRect(X0-w,Y0+dy,w-wi,1);c.fillRect(X0+wi,Y0+dy,w-wi,1)}}}
+function pell(c,x,z,rx,rz,col){const X0=P8(x),Y0=P8(z),RX=rx*PPM,RZ=Math.max(1,Math.round(rz*PPM));c.fillStyle=col;for(let dy=-RZ;dy<RZ;dy++){const f=1-((dy+.5)/RZ)**2;const w=Math.round(RX*Math.sqrt(Math.max(0,f)));if(w>0)c.fillRect(X0-w,Y0+dy,w*2,1)}}
+
+// ================= WORLD =================
+const L=[[],[],[],[],[]];// 0 ground,1 floors,2 walls,3 props,4 trees/top
+let LT=null;function addS(layer,x0,z0,x1,z1,fn){(LT||L)[layer].push({b:[x0,z0,x1,z1],fn})}
+const COL=[];function addCol(x0,x1,z0,z1,h=2,tag){const c={x0,x1,z0,z1,h,tag,off:false};COL.push(c);return c}
+const LIGHTS=[];function light(x,z,r,col,fl){LIGHTS.push({x,z,r,col:col||"255,170,80",fl:fl!==false})}
+const WB={x0:X("light")-40,x1:X("lake")+80,z0:Z("star")-40,z1:Z("road")+48};
+const FLOOR={gate:"path",bridge:"path",road:"path",seawall:"path",light:"path",cliff:"rockF",docks:"wood",garden:"grass",orchard:"grass",mill:"grass",stones:"grass",moon:"grass",tarn:"ice",marsh:"marsh",court:"path",yard:"sand",lake:"sand",thorn:"forest",hollow:"forest",star:"gold",foyer:"marble",refect:"darkwood",kitchen:"terracotta",lib:"greencarpet",scrip:"checker",apoth:"whitetile",doors:"redcarpet",warden:"purplecarpet",clock:"bluetile",bell:"bluetile",vane:"wood"};
+const WS={castle:{top:"brick",face:"#4e4a44",fh:.9,edge:"#35322e"},low:{top:"lowwall",face:"#6f695e",fh:.35,edge:"#56514a"},rock:{top:"rockwall",face:"#2a282c",fh:.9,edge:"#1f1d21"}};
+function wallSeg(x0,z0,x1,z1,style,h){addCol(x0,x1,z0,z1,h);const st=WS[style];addS(2,x0,z0,x1,z1+st.fh,c=>{rect(c,x0,z1,x1-x0,st.fh,st.face);rect(c,x0,z1+st.fh-.13,x1-x0,.13,shade(st.face,.7));prect(c,x0,z0,x1-x0,z1-z0,st.top);rect(c,x0,z0,x1-x0,.13,st.edge)})}
+// ground
+addS(0,WB.x0,WB.z0,WB.x1,WB.z1,c=>prect(c,WB.x0,WB.z0,WB.x1-WB.x0,WB.z1-WB.z0,"grass"));
+addS(0,WB.x0,WB.z0,-136,WB.z1,c=>{prect(c,WB.x0,WB.z0,-136-WB.x0,WB.z1-WB.z0,"water");rect(c,-137.2,WB.z0,1.2,WB.z1-WB.z0,"#6b6658")});
+addS(0,20,62,WB.x1,WB.z1,c=>prect(c,20,62,WB.x1-20,WB.z1-62,"forest"));
+addS(0,-104,0,-34,104,c=>{prect(c,-104,0,36,104,"rockF");prect(c,-68,68,34,36,"rockF")});
+const inLake=(x,z)=>((x-214)/50)**2+((z+30)/77)**2<1;
+addS(0,164,-107,264,47,c=>{const X0=P8(214),Y0=P8(-30),RX=48*PPM,RZ=75*PPM;c.fillStyle=patFor(c,"water");for(let dy=-RZ;dy<RZ;dy++){const w=Math.round(RX*Math.sqrt(Math.max(0,1-((dy+.5)/RZ)**2)));if(w>0)c.fillRect(X0-w,Y0+dy,w*2,1)}pc(c,226,-50,9,"#6a6660");pc(c,226,-50,7.5,"#5a7a44");[[-2,0],[2,1],[0,-2.5]].forEach(([a,b])=>pc(c,226+a,-50+b,.7,"#b2ab9e"))});
+
+function corrRect(e){const a=e[0],b=e[1],d=dirTo(a,b),[dx,dz]=DV[d];
+  const sx=X(a)+dx*half(a),sz=Z(a)+dz*half(a),ex=X(b)-dx*half(b),ez=Z(b)-dz*half(b);
+  return{ns:dx===0,x0:Math.min(sx,ex)-(dx===0?2:0),x1:Math.max(sx,ex)+(dx===0?2:0),z0:Math.min(sz,ez)-(dz===0?2:0),z1:Math.max(sz,ez)+(dz===0?2:0),mx:(sx+ex)/2,mz:(sz+ez)/2,len:Math.abs(dx?ex-sx:ez-sz)}}
+const CORR=E.map(e=>({e,r:corrRect(e)}));
+const castleK=k=>["hall","tower","hidden","common"].includes(R[k].z);
+function buildRoom(k){const cx=X(k),cz=Z(k),hs=half(k),H=wallH(k),th=.6,style=isLow(k)?"low":isUnder(k)?"rock":"castle";
+  const fl=FLOOR[k]||(isUnder(k)?"rockF":"stone");addS(1,cx-hs,cz-hs,cx+hs,cz+hs,c=>prect(c,cx-hs,cz-hs,hs*2,hs*2,fl));
+  const gaps={};E.forEach(e=>{if(e.includes(k))gaps[dirTo(k,e[0]===k?e[1]:e[0])]=true});
+  ["N","S","E","W"].forEach(sd=>{const ns=sd==="N"||sd==="S",sg=(sd==="N"||sd==="W")?-1:1;
+    if(ns){const z=cz+sg*hs;if(!gaps[sd])wallSeg(cx-hs-th/2,z-th/2,cx+hs+th/2,z+th/2,style,H);else{wallSeg(cx-hs-th/2,z-th/2,cx-2,z+th/2,style,H);wallSeg(cx+2,z-th/2,cx+hs+th/2,z+th/2,style,H)}}
+    else{const x=cx+sg*hs;if(!gaps[sd])wallSeg(x-th/2,cz-hs-th/2,x+th/2,cz+hs+th/2,style,H);else{wallSeg(x-th/2,cz-hs-th/2,x+th/2,cz-2,style,H);wallSeg(x-th/2,cz+2,x+th/2,cz+hs+th/2,style,H)}}});
+  if(castleK(k)){const offs=hs>12?[-10,-4.5,4.5,10]:[-5.5,5.5],cols=["#c83a42","#3d63c2","#e0b03a","#3f9a5a","#9a4ac0"];
+    ["N","S","E","W"].forEach((sd,si)=>{if(k==="refect"&&(sd==="E"||sd==="W"))return;offs.forEach((o,oi)=>{const col=cols[(si+oi+R[k].c)%5];
+      if(sd==="N"||sd==="S"){const z=cz+(sd==="N"?-hs:hs);addS(2,cx+o-1.2,z-.4,cx+o+1.2,z+.4,c=>{rect(c,cx+o-1.1,z-.13,2.2,.26,col);rect(c,cx+o-.05,z-.13,.13,.26,"#1a1410")})}
+      else{const x=cx+(sd==="W"?-hs:hs);addS(2,x-.4,cz+o-1.2,x+.4,cz+o+1.2,c=>{rect(c,x-.13,cz+o-1.1,.26,2.2,col);rect(c,x-.13,cz+o-.05,.26,.13,"#1a1410")})}})})}
+  if(!isLow(k)){const to=hs-2;[[-hs+.5,to],[hs-.5,-to]].forEach(([a,b])=>{torch(cx+a,cz+b);torch(cx+b,cz+a)})}
+  if(castleK(k)&&!isOpen(k))light(cx,cz,8,"255,200,120",false);
+}
+function torch(x,z){addS(3,x-.3,z-.3,x+.3,z+.3,c=>{rect(c,x-.13,z-.13,.26,.26,"#2a2420")});TORCHES.push({x,z});light(x,z,4.5)}
+const TORCHES=[];
+function buildCorridor(ce){const e=ce.e,a=e[0],b=e[1],r=ce.r,indoor=!isLow(a)&&!isLow(b),under=isUnder(a)&&isUnder(b),H=indoor?4.5:1.3,style=under?"rock":indoor?"castle":"low",fl=under?"rockF":indoor?"stone":"path";
+  addS(1,r.x0,r.z0,r.x1,r.z1,c=>prect(c,r.x0,r.z0,r.x1-r.x0,r.z1-r.z0,fl));
+  if(r.ns){wallSeg(r.mx-2.6,r.z0,r.mx-2,r.z1,style,H);wallSeg(r.mx+2,r.z0,r.mx+2.6,r.z1,style,H)}else{wallSeg(r.x0,r.mz-2.6,r.x1,r.mz-2,style,H);wallSeg(r.x0,r.mz+2,r.x1,r.mz+2.6,style,H)}
+  if(indoor&&!under&&r.len>6&&!(typeof e[3]==="string")){r.ns?torch(r.mx-1.7,r.mz):torch(r.mx,r.mz-1.7)}}
+const SECRET_DRAW={};
+Object.keys(R).forEach(buildRoom);CORR.forEach(ce=>{if(typeof ce.e[3]==="string"){LT=[[],[],[],[],[]];buildCorridor(ce);SECRET_DRAW[ce.e[3]]=[].concat(...LT);LT=null}else buildCorridor(ce)});
+
+// ---- props ----
+const LX=(k,lx,lz)=>[X(k)+lx,Z(k)+lz];
+function solid(x,z,w,d,h,draw,layer=3){addCol(x-w/2,x+w/2,z-d/2,z+d/2,h);addS(layer,x-w/2-.5,z-d/2-.5,x+w/2+.5,z+d/2+.8,draw)}
+function deco(x,z,r,draw,layer=3){addS(layer,x-r,z-r,x+r,z+r,draw)}
+const WOOD="#7a5232",WOODD="#5a3a20";
+function table(x,z,w,d){solid(x,z,w,d,1,c=>{rectC(c,x,z+.12,w,d,WOODD);rectC(c,x,z,w,d,WOOD);rect(c,x-w/2,z-d/2,w,.13,"#96693f")})}
+function bench(x,z,w,ax=true){const W=ax?w:.5,D=ax?.5:w;solid(x,z,W,D,.5,c=>{rectC(c,x,z,W,D,"#6a4628");rectC(c,x,z+.1,W,.1,"#4a2e18")})}
+function shelf(x,z,len,ax){const W=ax?len:.7,D=ax?.7:len;solid(x,z,W,D,3,c=>{rectC(c,x,z,W,D,"#4a2e18");const cols=["#9a2e2e","#2e4a9a","#3d7a3a","#9a7a2e","#6a2e7a"];const n=Math.floor(len/.25);for(let i=0;i<n;i++){const t=-len/2+.12+i*.25;ax?rect(c,x+t,z-.25,.13,.5,cols[i%5]):rect(c,x-.25,z+t,.5,.13,cols[i%5])}})}
+function pillar(x,z){solid(x,z,1.2,1.2,7,c=>{pc(c,x,z+.15,.7,"#4e4a44");pc(c,x,z,.65,"#8a857e");pc(c,x-.15,z-.15,.3,"#a39d95")})}
+function lamp(x,z){solid(x,z,.3,.3,2.6,c=>{pc(c,x,z,.22,"#2a2a2e");pc(c,x,z,.12,"#ffe1a0")});light(x,z,5,"255,220,150")}
+function barrel(x,z){solid(x,z,1,1,1.1,c=>{pc(c,x,z,.5,"#6e4a2a");pring(c,x,z,.5,"#3e2a18");pc(c,x,z,.2,"#5a3a20")})}
+function cauldron(x,z){solid(x,z,1.8,1.8,1.1,c=>{pc(c,x,z,.9,"#202024");pc(c,x,z,.65,"#3fd46a");pc(c,x-.2,z-.2,.15,"#b8ffcc")});light(x,z,3.5,"90,255,140",false)}
+function tree(x,z,s=1,col="#2f5a2c",round=false,collide=true){const r=(round?1.4:1.6)*s;const draw=c=>{pc(c,x+.4,z+.5,r,"rgba(0,0,0,.25)");pc(c,x,z,r,col);pc(c,x-r*.3,z-r*.3,r*.55,shade(col,1.25));if(round){[[.4,-.3],[-.5,.4],[.2,.6]].forEach(([a,b])=>pc(c,x+a*r,z+b*r,.18,"#c0392b"))}};
+  if(collide)solid(x,z,.6,.6,2,draw,4);else deco(x,z,r+.6,draw,4)}
+function rock(x,z,s=1,col="#77727a"){solid(x,z,s*1.6,s*1.6,s,c=>{pc(c,x+.2,z+.2,s*.85,shade(col,.6));pc(c,x,z,s*.8,col);pc(c,x-s*.25,z-s*.25,s*.35,shade(col,1.2))})}
+function dome(x,z,r){solid(x,z,r*2,r*2,2,c=>{pc(c,x,z,r,"rgba(170,215,240,.55)");pc(c,x,z,r*.55,"#3d7a3a");pring(c,x,z,r,"#d8eef8");pc(c,x-r*.4,z-r*.4,r*.18,"#ffffff")})}
+function lectern(x,z){solid(x,z,.8,.6,1.2,c=>{rectC(c,x,z,.8,.6,WOODD);rectC(c,x,z-.05,.7,.4,"#e9e2cf")})}
+function dummy(x,z){solid(x,z,.8,.8,2,c=>{pc(c,x,z,.4,"#b59a6a");pring(c,x,z,.4,"#7a6440");pc(c,x,z-.05,.18,"#d0b888")})}
+function bedP(x,z,w,d,blanket,pillowSide){solid(x,z,w,d,.6,c=>{rectC(c,x,z,w,d,WOODD);rectC(c,x,z,w-.15,d-.15,blanket);const ps=pillowSide;if(ps==="E")rectC(c,x+w/2-.45,z,.5,d*.6,"#eeeae0");else if(ps==="W")rectC(c,x-w/2+.45,z,.5,d*.6,"#eeeae0");else if(ps==="N")rectC(c,x,z-d/2+.45,w*.6,.5,"#eeeae0");else rectC(c,x,z+d/2-.45,w*.6,.5,"#eeeae0");
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>rectC(c,x+a*(w/2-.08),z+b*(d/2-.08),.16,.16,"#3a2414"))})}
+function statue(x,z){solid(x,z,1.4,1.4,2,c=>{rectC(c,x,z,1.4,1.4,"#8d877c");rectC(c,x,z-.1,.8,1,"#a8a194");rectC(c,x-.25,z-.5,.2,.25,"#c2bbad");rectC(c,x+.25,z-.5,.2,.25,"#c2bbad")})}
+function hearth(x,z,w,d){solid(x,z,w,d,3,c=>{rectC(c,x,z,w,d,"#3a3632");rectC(c,x,z,w*.7,d*.6,"#1a1210");rectC(c,x,z,w*.5,d*.4,"#ff9a3c");rectC(c,x,z,w*.25,d*.2,"#ffe08a")});light(x,z,6.5)}
+const BMAT=h=>HOUSES[h].c;
+function banner(x,z,sd,col){const ns=sd==="N"||sd==="S";addS(3,x-1,z-1,x+1,z+1,c=>{if(ns){rectC(c,x,z,1.6,.4,col);rectC(c,x,z,1.8,.1,"#d9ad45")}else{rectC(c,x,z,.4,1.6,col);rectC(c,x,z,.1,1.8,"#d9ad45")}})}
+const DUMMIES=[],MISTS=[],LANTERNS=[],WISPS=[],SAILS=[],FOODS=[];
+const PROPS={
+gate:k=>{const[cx,cz]=[X(k),Z(k)];statue(cx-6,cz-6);statue(cx+6,cz-6);lamp(cx-8,cz+8);lamp(cx+8,cz+8);[-14,14].forEach(a=>deco(cx+a,cz-12,3.6,c=>{pc(c,cx+a,cz-12+.3,3.2,"#4e4a44");pc(c,cx+a,cz-12,3,"#8e877c");pc(c,cx+a,cz-12,2.2,"#3b4660");pc(c,cx+a-.6,cz-12-.6,.8,"#56638a")},4))},
+bridge:k=>{const[cx,cz]=[X(k),Z(k)];[[-7,-7],[7,7],[-7,7]].forEach(([a,b])=>lamp(cx+a,cz+b));rock(cx+8,cz-8,1.4)},
+road:k=>{const[cx,cz]=[X(k),Z(k)];[-9,-3,3,9].forEach(z=>{lamp(cx-4,cz+z);lamp(cx+4,cz+z)})},
+foyer:k=>{const[cx,cz]=[X(k),Z(k)];[[-6,-6],[-6,6],[6,6]].forEach(([a,b])=>pillar(cx+a,cz+b));const[bx,bz]=LX(k,6,-6);solid(bx,bz,1,1,1.1,c=>{rectC(c,bx,bz,1,1,WOODD);rectC(c,bx,bz,1.1,.8,"#6b2a1e");rectC(c,bx-.27,bz,.45,.7,"#eee8d8");rectC(c,bx+.27,bz,.45,.7,"#eee8d8");rectC(c,bx,bz,.06,.7,"#6b2a1e")});light(bx,bz,4,"255,220,160",false)},
+court:k=>{const[cx,cz]=[X(k),Z(k)];bench(cx-7,cz-7,3);bench(cx+7,cz+7,3);bench(cx-7,cz+7,3);tree(cx+7,cz-7,1.1);for(let i=0;i<14;i++)LANTERNS.push({x:cx+rand(-9,9),z:cz+rand(-9,9),p:rand(0,6)})},
+refect:k=>{const[cx,cz]=[X(k),Z(k)];addS(3,cx-13,cz-15,cx+13,cz-11,c=>{rect(c,cx-13,cz-15,26,4,"#6a4a30");rect(c,cx-13,cz-11.15,26,.15,"#3a2414")});
+  [["wolves",-8,0],["herons",-4,0],["foxes",4,1],["bears",8,1]].forEach(([h,z,split])=>{(split?[[-8,10],[8,10]]:[[0,24]]).forEach(([x,w])=>{table(cx+x,cz+z,w,1.4);addS(3,cx+x-w/2,cz+z-.3,cx+x+w/2,cz+z+.3,c=>rectC(c,cx+x,cz+z,w,.4,BMAT(h)));bench(cx+x,cz+z-1.1,w);bench(cx+x,cz+z+1.1,w);
+      for(let i=-w/2+1.5;i<w/2;i+=3)light(cx+x+i,cz+z,2.2,"255,210,140",true)});banner(cx-14.55,cz+z,"W",BMAT(h));banner(cx+14.55,cz+z,"E",BMAT(h))});
+  table(cx-7.5,cz-13.4,7,1.3);table(cx+7.5,cz-13.4,7,1.3);STAFFX.forEach(x=>addS(3,cx+x-.4,cz-14.6,cx+x+.4,cz-14,c=>rectC(c,cx+x,cz-14.3,.55,.5,WOODD)));
+  solid(cx,cz-12.4,1.3,1.3,1.1,c=>{pc(c,cx,cz-12.4,.65,"#8a857e");pc(c,cx,cz-12.4,.45,"#d9ad45");pc(c,cx-.12,cz-12.52,.15,"#fff1b0");rect(c,cx-.7,cz-12.5,.2,.2,"#d9ad45");rect(c,cx+.5,cz-12.5,.2,.2,"#d9ad45")});light(cx,cz-12.4,3,"255,215,120",false);
+  addS(3,cx-3.2,cz-15,cx+3.2,cz-14.2,c=>{rect(c,cx-3,cz-14.7,6,.45,"#2a1c12");rect(c,cx-3,cz-14.7,6,.08,"#d9ad45")});[-7.25,7.25].forEach(x=>banner(cx+x,cz-14.55,"N","#5a3578"));
+  [[-7,-6],[7,-6],[-7,6],[7,6]].forEach(([a,b])=>light(cx+a,cz+b,8,"255,200,120",false))},
+kitchen:k=>{const[cx,cz]=[X(k),Z(k)];solid(cx,cz+9.8,18,1.2,1,c=>{rectC(c,cx,cz+9.8,18,1.2,WOODD);rectC(c,cx,cz+9.75,17.8,1,"#8a6a4a");for(let i=-7;i<=7;i+=3.5)pc(c,cx+i,cz+9.8,.4,"#55585e")});barrel(cx+8,cz-8);barrel(cx+7,cz-6.8);cauldron(cx-7,cz+5.5)},
+lib:k=>{const[cx,cz]=[X(k),Z(k)];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{shelf(cx+sx*6.5,cz+sz*5,6,true);shelf(cx+sx*6.5,cz+sz*8.6,6,true)});[-6,6].forEach(a=>addS(3,cx+a-1.5,cz-10.8,cx+a+1.5,cz-10.2,c=>rectC(c,cx+a,cz-10.55,2.6,.25,"#c9d3dc")))},
+scrip:k=>{const[cx,cz]=[X(k),Z(k)];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>[4.5,8].forEach(a=>[4.5,8].forEach(b=>{table(cx+sx*a,cz+sz*b,1.6,1);const x=cx+sx*a+.5,z=cz+sz*b;addS(3,x-.2,z-.2,x+.2,z+.2,c=>rectC(c,x,z,.15,.15,"#ffe08a"));light(x,z,1.8,"255,210,140",true)})))},
+apoth:k=>{const[cx,cz]=[X(k),Z(k)];bedP(cx-8,cz-6,1.2,2.2,"#e8e4da","N");bedP(cx-8,cz+6,1.2,2.2,"#e8e4da","N");shelf(cx,cz+10,10,true);cauldron(cx+7,cz+6)},
+yard:k=>{const[cx,cz]=[X(k),Z(k)];dummy(cx-6,cz-6);dummy(cx-6,cz+6);dummy(cx+6,cz+6);DUMMIES.push([cx-6,cz-6],[cx-6,cz+6],[cx+6,cz+6]);lectern(...LX(k,5.6,-5.6))},
+doors:k=>{const[cx,cz]=[X(k),Z(k)];[-8,-4,4,8].forEach(z=>addS(3,cx-10.9,cz+z-1,cx-10.3,cz+z+1,c=>rect(c,cx-10.7,cz+z-.8,.25,1.6,"#6a4628")));[-8,-5,5,8].forEach(x=>{addS(3,cx+x-1,cz-10.9,cx+x+1,cz-10.3,c=>rect(c,cx+x-.8,cz-10.7,1.6,.25,"#6a4628"));addS(3,cx+x-1,cz+10.3,cx+x+1,cz+10.9,c=>rect(c,cx+x-.8,cz+10.45,1.6,.25,"#6a4628"))})},
+warden:k=>{const[cx,cz]=[X(k),Z(k)];table(cx-6,cz-6,3,1.6);shelf(cx+6,cz+8,5,true);hearth(cx,cz-10.1,4,1);addS(3,cx+10.2,cz-1.2,cx+10.9,cz+1.2,c=>rect(c,cx+10.45,cz-1,.25,2,"#2a2420"))},
+clock:k=>{const[cx,cz]=[X(k),Z(k)];addS(1,cx-3.3,cz-3.3,cx+3.3,cz+3.3,c=>{pc(c,cx,cz,3.2,"#d9ad45");pc(c,cx,cz,2.9,"#efe3c0");for(let i=0;i<12;i++){const a=i/12*Math.PI*2;rectC(c,cx+Math.sin(a)*2.5,cz-Math.cos(a)*2.5,.2,.2,"#3a2e1e")}rect(c,cx-.08,cz-2.1,.16,2.1,"#3a2e1e");rect(c,cx,cz-.08,1.5,.16,"#3a2e1e")});
+  [[-8.8,-10.4],[8.8,10.4],[-10.4,8.8],[10.4,8.8]].forEach(([a,b])=>deco(cx+a,cz+b,1.6,c=>{pring(c,cx+a,cz+b,1.3,"#d9ad45",2);pc(c,cx+a,cz+b,.3,"#b08a3a")}));lectern(...LX(k,5.6,-5.6))},
+bell:k=>{const[cx,cz]=[X(k),Z(k)];[[-6,-6],[6,-6],[-6,6],[6,6]].forEach(([a,b])=>deco(cx+a,cz+b,1,c=>{pc(c,cx+a,cz+b,.9,"#b08a3a");pc(c,cx+a,cz+b,.7,"#d9ad45");pc(c,cx+a,cz+b,.15,"#5a4520")}))},
+vane:k=>{const[cx,cz]=[X(k),Z(k)];[[-6,6],[6,6],[-6,-6]].forEach(([a,b])=>solid(cx+a,cz+b,.8,.8,1.5,c=>{rectC(c,cx+a,cz+b,.8,.8,WOODD);pc(c,cx+a,cz+b,.5,"#a8d8f0");pc(c,cx+a,cz+b,.2,"#3fa7d6")}));lectern(...LX(k,5.6,-5.6))},
+star:k=>{const[cx,cz]=[X(k),Z(k)];for(let i=0;i<40;i++){const x=cx+rand(-10,10),z=cz+rand(-10,10);addS(3,x-.1,z-.1,x+.1,z+.1,c=>rect(c,x,z,.13,.13,"#fff4c0"))}table(cx-6,cz-6,3,2);light(cx,cz,9,"255,225,140",false)},
+light:k=>{const[cx,cz]=[X(k),Z(k)];solid(cx-6,cz-6,4.4,4.4,14,c=>{pc(c,cx-6,cz-6,2.4,"#e8e2d4");pring(c,cx-6,cz-6,2.4,"#9a3a32",3);pc(c,cx-6,cz-6,1.4,"#9a3a32");pc(c,cx-6,cz-6,.8,"#ffe08a")});light(cx-6,cz-6,9,"255,235,170",true);rock(cx+7,cz+7,1.3)},
+seawall:k=>{const[cx,cz]=[X(k),Z(k)];barrel(cx+7,cz-7);barrel(cx+7.9,cz-6.2);lamp(cx-8,cz+8);lamp(cx+8,cz+8)},
+cliff:k=>{const[cx,cz]=[X(k),Z(k)];rock(cx-7,cz-7,1.8);rock(cx+7,cz+7,1.5);rock(cx+7,cz-7,1.2);rock(cx-7,cz+7,1.4)},
+docks:k=>{const[cx,cz]=[X(k),Z(k)];addS(3,cx-10.6,cz-10,cx-3.4,cz-2,c=>{prect(c,cx-10.5,cz-10,7,8,"water");rectC(c,cx-7,cz-6,1.4,3,"#5a3a20");rectC(c,cx-7,cz-6,1,2.5,"#7a5232")});barrel(cx+7,cz+7);barrel(cx+7,cz-7)},
+river:k=>{const[cx,cz]=[X(k),Z(k)];addS(3,cx-10,cz+6,cx+10,cz+10,c=>{prect(c,cx-10,cz+6,20,4,"water");rect(c,cx-10,cz+6,20,.2,"#7fd0f0")});light(cx,cz+8,7,"95,195,255",true);[[-8,-8],[8,-8]].forEach(([a,b])=>{deco(cx+a,cz+b,.6,c=>{pc(c,cx+a,cz+b,.45,"#5fc3ff");pc(c,cx+a-.1,cz+b-.1,.15,"#e0f6ff")});light(cx+a,cz+b,3,"95,195,255",false)})},
+cata:k=>{const[cx,cz]=[X(k),Z(k)];for(let i=-9;i<=9;i+=1.5){addS(3,cx+i-.2,cz-10.8,cx+i+.2,cz-10.3,c=>rect(c,cx+i,cz-10.6,.15,.3,"#d9ad45"));addS(3,cx+i-.2,cz+10.3,cx+i+.2,cz+10.8,c=>rect(c,cx+i,cz+10.4,.15,.3,"#d9ad45"));addS(3,cx+10.3,cz+i-.2,cx+10.8,cz+i+.2,c=>rect(c,cx+10.4,cz+i,.3,.15,"#d9ad45"))}
+  [[-6,-6],[6,6],[-6,6],[6,-6]].forEach(([a,b])=>deco(cx+a,cz+b,1,c=>{pc(c,cx+a,cz+b,.6,"#ddd6c4");pc(c,cx+a+.5,cz+b+.4,.45,"#cfc8b4");rect(c,cx+a-.2,cz+b-.1,.13,.13,"#333")}));light(cx,cz-8,4,"200,190,255",false)},
+cellar:k=>{const[cx,cz]=[X(k),Z(k)];cauldron(cx-6,cz-6);cauldron(cx-6,cz+6);cauldron(cx+6,cz+6);shelf(cx-10,cz+6.5,4,false);lectern(...LX(k,5.6,-5.6))},
+vault:k=>{const[cx,cz]=[X(k),Z(k)];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{shelf(cx+sx*6.5,cz+sz*6,5,true);for(let i=-2;i<=2;i++)addS(3,cx+sx*6.5+i-.15,cz+sz*6-.15,cx+sx*6.5+i+.15,cz+sz*6+.15,c=>rect(c,cx+sx*6.5+i-.07,cz+sz*6-.07,.15,.15,"#7fd0ff"))});solid(cx-6,cz,.7,.7,1,c=>rectC(c,cx-6,cz,.7,.7,WOODD))},
+garden:k=>{const[cx,cz]=[X(k),Z(k)];dome(cx-7,cz-7,2.4);dome(cx-7,cz+7,2.2);dome(cx+7,cz+7,2.5);lectern(...LX(k,5.6,-5.6))},
+orchard:k=>{const[cx,cz]=[X(k),Z(k)];[[-6,-6],[-8,-9],[6,-6],[8,-9],[-6,6],[-8,9],[6,6],[8,9]].forEach(([a,b])=>tree(cx+a,cz+b,1,"#3f6b36",true));[-4,4].forEach(a=>solid(cx+a,cz+4,.6,.6,.7,c=>{rectC(c,cx+a,cz+4,.6,.6,"#eeeae0");rect(c,cx+a-.3,cz+4,.6,.08,"#c8a040")}))},
+mill:k=>{const[cx,cz]=[X(k),Z(k)];solid(cx-6,cz-6,4.8,4.8,9,c=>{pc(c,cx-6,cz-6,2.6,"#d8d2c4");pc(c,cx-6,cz-6,1.9,"#7a5232");pc(c,cx-6,cz-6,.4,"#3a2414")});SAILS.push({x:cx-6,z:cz-6});[[6,6],[7,7]].forEach(([a,b])=>solid(cx+a,cz+b,.8,.8,.8,c=>{rectC(c,cx+a,cz+b,.8,.8,"#c8bfa8");rect(c,cx+a-.1,cz+b-.4,.2,.15,"#8a7a5a")}))},
+stones:k=>{const[cx,cz]=[X(k),Z(k)];for(let i=0;i<8;i++){if(i===5)continue;const a=Math.PI/8+i*Math.PI/4,x=cx+Math.sin(a)*8,z=cz+Math.cos(a)*8;solid(x,z,1,1,3.4,c=>{rectC(c,x+.15,z+.2,1,.8,"#3a383c");rectC(c,x,z,1,.8,"#77727a");rect(c,x-.5,z-.4,1,.15,"#8e8992")})}},
+moon:k=>{const[cx,cz]=[X(k),Z(k)];solid(cx+6,cz+6,3.2,3.2,1.1,c=>{pc(c,cx+6,cz+6,1.7,"#a8a194");pc(c,cx+6,cz+6,1.35,"#dfe9ff");pc(c,cx+5.6,cz+5.6,.4,"#ffffff")});light(cx+6,cz+6,4,"220,235,255",false);lamp(cx-7,cz-7);lamp(cx+7,cz-7)},
+tarn:k=>{const[cx,cz]=[X(k),Z(k)];[[-8,-8],[8,-8],[-8,8],[8,8],[0,-9],[-9,3]].forEach(([a,b])=>rock(cx+a,cz+b,1.2,"#eef2f5"))},
+marsh:k=>{const[cx,cz]=[X(k),Z(k)];for(let i=0;i<40;i++){const a=rand(3.5,10)*(Math.random()<.5?-1:1),b=rand(3.5,10)*(Math.random()<.5?-1:1);addS(3,cx+a-.2,cz+b-.3,cx+a+.2,cz+b+.1,c=>rect(c,cx+a,cz+b-.25,.13,.38,"#5a7a3a"))}for(let i=0;i<8;i++)MISTS.push({x:cx+rand(-8,8),z:cz+rand(-8,8),p:rand(0,6)})},
+lake:k=>{const[cx,cz]=[X(k),Z(k)];addS(3,cx+3,cz+4.8,cx+12,cz+7.2,c=>{rect(c,cx+3,cz+4.8,9,2.4,"#7a5232");for(let x=3;x<12;x+=.5)rect(c,cx+x,cz+4.8,.06,2.4,"#5a3a20")});lamp(cx-7,cz-7);lamp(cx-7,cz+7);bench(cx+6,cz-7,3);addS(3,cx+20,cz+5,cx+24,cz+7,c=>{pell(c,cx+22,cz+6,1.4,.6,"#5a3a20");pell(c,cx+22,cz+6,1.1,.4,"#7a5232")})},
+thorn:k=>{const[cx,cz]=[X(k),Z(k)];[[-5,-5],[-8,-4],[-5,-9],[-9,-8],[5,-5],[8,-4],[5,-9],[9,-8],[-5,5],[-8,4],[-5,9],[-9,8],[5,5],[8,4],[5,9],[9,8]].forEach(([a,b])=>tree(cx+a,cz+b,rand(1.1,1.6),"#1e3324"));
+  for(let i=0;i<14;i++){const a=rand(3.5,10)*(Math.random()<.5?-1:1),b=rand(3.5,10)*(Math.random()<.5?-1:1);addS(3,cx+a-.2,cz+b-.2,cx+a+.2,cz+b+.2,c=>{rect(c,cx+a-.13,cz+b-.13,.26,.26,"#6fffd6")});light(cx+a,cz+b,1.6,"110,255,214",false)}for(let i=0;i<6;i++)WISPS.push({x:cx+rand(-8,8),z:cz+rand(-8,8),p:rand(0,6)})},
+hollow:k=>{const[cx,cz]=[X(k),Z(k)];solid(cx-6,cz-6,6,6,9,c=>{pc(c,cx-6,cz-6,6.2,"#16261a");pc(c,cx-6,cz-6,3.4,"#4a3420");pc(c,cx-6,cz-6,2,"#0a0806")},4);
+  for(let i=0;i<16;i++){const a=i/16*Math.PI*2+Math.PI/16,x=cx+Math.cos(a)*6,z=cz+Math.sin(a)*6;addS(3,x-.25,z-.25,x+.25,z+.25,c=>pc(c,x,z,.22,"#6fffd6"));light(x,z,2,"110,255,214",false)}
+  [[6,6],[8,-6],[-8,7]].forEach(([a,b])=>tree(cx+a,cz+b,1.5,"#1e3324"))}
+};
+const STAFFX=[-9.5,-7.5,-5.5,5.5,7.5];
+// common rooms (dormitories)
+const BEDS=[],DORM={},FIRES=[];
+function commonRoom(k){const h=R[k].house,cx=X(k),cz=Z(k),hs=half(k),bm=BMAT(h);const e=E.find(e=>e.includes(k)),o=e[0]===k?e[1]:e[0],d=dirTo(k,o),opp={N:"S",S:"N",E:"W",W:"E"}[d];const[ox,oz]=DV[opp],ns=opp==="N"||opp==="S";
+  const fx=cx+ox*(hs-.9),fz=cz+oz*(hs-.9);hearth(fx,fz,ns?5:1.2,ns?1.2:5);FIRES.push({x:fx-ox*1.6,z:fz-oz*1.6,k});
+  addS(1,cx-4.5,cz-3.5,cx+4.5,cz+3.5,c=>{rectC(c,cx,cz,9,7,shade(bm,.7));rectC(c,cx,cz,8.4,6.4,bm);rectC(c,cx,cz,6,4,shade(bm,.85))});
+  const crx=fx-ox*.75,crz=fz-oz*.75;addS(3,crx-1.5,crz-1.5,crx+1.5,crz+1.5,c=>{pc(c,crx+ox*.3,crz+oz*.3,.9,"#d9ad45");pc(c,crx+ox*.3,crz+oz*.3,.7,bm)});
+  [[-6,-6],[6,-6],[-6,6],[6,6]].forEach(([a,b])=>solid(cx+a,cz+b,1.2,1.2,1,c=>{rectC(c,cx+a,cz+b,1.2,1.2,shade(bm,.75));rectC(c,cx+a,cz+b-(b<0?-.1:.1),1,.9,bm);rectC(c,cx+a,cz+b+(b>0?.45:-.45),1.2,.3,shade(bm,.6))}));
+  (ns?["E","W"]:["N","S"]).forEach(sd=>{const[sx,sz]=DV[sd];banner(cx+sx*(hs-.45),cz+sz*(hs-.45),sd,bm)});
+  DORM[h]={x:cx,z:cz};[-1,1].forEach(sd=>[-8,-4,4,8].forEach(off=>{const bx=ns?cx+sd*(hs-1.5):cx+off,bz=ns?cz+off:cz+sd*(hs-1.5);bedP(bx,bz,ns?2.2:1.3,ns?1.3:2.2,bm,ns?(sd>0?"E":"W"):(sd>0?"S":"N"));BEDS.push({x:bx,z:bz,h})}));
+  light(cx,cz,8,"255,200,120",false)}
+["cr_wolves","cr_herons","cr_foxes","cr_bears"].forEach(k=>PROPS[k]=commonRoom);
+Object.keys(PROPS).forEach(k=>PROPS[k](k));
+// decorative towers and forests (outside, no collision needed)
+function bigTower(x,z,r){deco(x,z,r+1,c=>{pc(c,x+.6,z+.8,r,"rgba(0,0,0,.3)");pc(c,x,z,r,"#8e877c");pc(c,x,z,r*.82,"#3b4660");pc(c,x-r*.25,z-r*.25,r*.35,"#56638a");pc(c,x,z,.4,"#d9ad45")},4)}
+[[1,2,6],[5,1,5],[2,5,5]].forEach(([c,r,rad])=>bigTower((c-3.5)*SP,(r-3.5)*SP,rad));
+const BIGT=[[1,2],[5,1],[2,5]].map(([c,r])=>[(c-3.5)*SP,(r-3.5)*SP]);
+const clearOf=(x,z,pad)=>!Object.keys(R).some(k=>Math.abs(x-X(k))<half(k)+pad&&Math.abs(z-Z(k))<half(k)+pad)&&!CORR.some(c=>x>c.r.x0-pad&&x<c.r.x1+pad&&z>c.r.z0-pad&&z<c.r.z1+pad);
+for(let i=0,n=0;i<5000&&n<520;i++){const x=rand(20,WB.x1-2),z=rand(62,WB.z1-2);if(!clearOf(x,z,2.5)||inLake(x,z))continue;tree(x,z,rand(1.1,2),Math.random()<.5?"#1e3324":"#24402a",false,false);n++}
+for(let i=0,n=0;i<5000&&n<380;i++){const x=rand(-134,WB.x1-2),z=rand(WB.z0+2,WB.z1-2);if(!clearOf(x,z,3)||inLake(x,z)||BIGT.some(([a,b])=>Math.hypot(x-a,z-b)<8)||(x>20&&z>62))continue;tree(x,z,rand(.8,1.5),pick(["#2f5a2c","#3a6a32","#2a4f2a"]),false,false);n++}
+const SL=[].concat(...L);
+// blockers and secret wall (dynamic)
+const BLOCK=[];
+CORR.forEach(ce=>{const e=ce.e,r=ce.r;if(!e[2])return;const w=r.ns?4:.5,d=r.ns?.5:4;const c=addCol(r.mx-w/2,r.mx+w/2,r.mz-d/2,r.mz+d/2,4,"lock");BLOCK.push({e,c,x:r.mx,z:r.mz,ns:r.ns,open:false})});
+const SECRET={x:X("clock"),z:Z("clock")-half("clock"),c:null};SECRET.c=addCol(SECRET.x-2,SECRET.x+2,SECRET.z-.3,SECRET.z+.3,9);
+function openBlock(b){if(b.open)return;b.open=true;b.c.off=true}
+function syncLocks(){BLOCK.forEach(b=>{if(canOpen(b.e[2]))openBlock(b)});if(S.found)SECRET.c.off=true}
+// pickups
+const PICK=[];Object.keys(R).forEach(k=>{const it=R[k].item;if(!it)return;const pos={lantern:[4,4],key:[-6,0],seal:[6,0]}[it];const[x,z]=LX(k,pos[0],pos[1]);PICK.push({it,x,z,k})});
+
+// ---- secrets ----
+const SECRETS_ALL=["star","bookcase","tunnel","coin1","coin2","coin3","coin4","coin5","coin6","stones","portrait","clock"];
+const CRACKS=[];CORR.forEach(ce=>{const id=ce.e[3];if(typeof id!=="string")return;const[a,b]=ce.e;[[a,b],[b,a]].forEach(([r1,r2])=>{const[x,z]=doorPt(r1,r2),ns=dirTo(r1,r2)==="N"||dirTo(r1,r2)==="S";const w=ns?4:.6,d=ns?.6:4;CRACKS.push({id,x,z,ns,c:addCol(x-w/2,x+w/2,z-d/2,z+d/2,9,"crack"),style:isUnder(r1)?"rock":isLow(r1)?"low":"castle"})})});
+const COINS=[["coin1","orchard",10.5,-10.5],["coin2","docks",10.5,10.5],["coin3","marsh",9,-9],["coin4","hollow",-10.5,-1.5],["coin5","light",10.5,-10.5],["coin6","cata",-10,10]].map(([id,k,a,b])=>({id,x:X(k)+a,z:Z(k)+b}));
+const STONEC=[X("stones"),Z("stones")],PORTRAIT=[X("warden")+9.3,Z("warden")],CLOCKC=[X("clock"),Z("clock")],WELL=[X("moon")+6,Z("moon")+6];
+const HINTS={star:"A note in the Mirror library talks about a room behind the clock.",bookcase:"One of the Mirror library's walls sounds hollow. Spells can break weak walls.",tunnel:"Smugglers once carried bottles from the cellars straight to the cliffs.",
+  coin1:"A founder's coin glints in a far corner of the Beehive orchard.",coin2:"Something shiny sits in a corner of the Sunken docks.",coin3:"The Mist marsh hides a coin where the reeds are thickest.",coin4:"A coin rests in the shadow of the Hollow oak.",coin5:"Check behind the Lighthouse for a lost coin.",coin6:"The Catacombs of keys hide more than keys.",
+  stones:"The standing stones only wake after 7 pm.",portrait:"The founder's portrait wants to be turned around.",clock:"Touch the floor clock in the Clocktower while it's noon."};
+function openSecretPath(id){CRACKS.forEach(k=>{if(k.id===id)k.c.off=true});const d=SECRET_DRAW[id];if(d&&!d.added){d.added=true;SL.push(...d);CHUNK.clear()}}
+function foundSecret(id,msg,pts){if(S.secrets.includes(id))return;S.secrets.push(id);if(CRACKS.some(k=>k.id===id))openSecretPath(id);const n=S.secrets.filter(x=>SECRETS_ALL.includes(x)).length;
+  if(S.house&&pts)award(S.house,pts,"found a secret");toast("Secret found ("+n+" of "+SECRETS_ALL.length+"): "+msg,"plus");
+  if(n===SECRETS_ALL.length){toast("You've uncovered every secret in Thornhollow.","plus");if(S.house)award(S.house,50,"found every secret")}save()}
+function nearPt(p,r){return Math.hypot(P.x-p[0],P.z-p[1])<r}
+function nearCrack(){return CRACKS.find(k=>!k.c.off&&Math.hypot(P.x-k.x,P.z-k.z)<2.6)}
+function secretInteract(){const ck=nearCrack();if(ck){toast("This wall sounds hollow. A spell might break through.");return true}
+  if(nearPt(STONEC,2.5)){if(S.minute>=19*60)foundSecret("stones","At night the missing stone flickers into the circle and whispers your name.",20);else if(!S.secrets.includes("stones"))toast("The stones hum faintly. Maybe they wake up at night.");else toast("The stones are quiet.");return true}
+  if(nearPt(PORTRAIT,2.2)){if(!S.secrets.includes("portrait"))foundSecret("portrait","You turn the portrait around. The founder winks and the frame shows a hidden letter: 'Curiosity is the first spell.'",15);else toast("The founder winks at you.");return true}
+  if(nearPt(CLOCKC,2)){if(S.minute>=720&&S.minute<780)foundSecret("clock","At noon the floor clock runs backward for one tick and a gold numeral pops loose.",20);else if(!S.secrets.includes("clock"))toast("The floor clock's hands both point at 12.");return true}
+  if(nearPt(WELL,2.6)){const left=SECRETS_ALL.filter(x=>!S.secrets.includes(x));toast(left.length?"The water ripples and shows you: "+HINTS[pick(left)]:"Your reflection looks very pleased with itself.");return true}
+  return false}
+function secretPrompt(U){if(nearCrack())return U+" to inspect the wall";if(nearPt(STONEC,2.5))return U+" to touch the stone circle";if(nearPt(PORTRAIT,2.2))return U+" to turn the portrait";if(nearPt(CLOCKC,2))return U+" to touch the floor clock";if(nearPt(WELL,2.6))return U+" to look into the Moonwell";return""}
+// chunk cache
+const CHUNK=new Map();
+function getChunk(ix,iy){const key=ix+","+iy;let ch=CHUNK.get(key);if(ch)return ch;ch=document.createElement("canvas");ch.width=ch.height=CSZ;const c=ch.getContext("2d");c.imageSmoothingEnabled=false;c.translate(-ix*CSZ,-iy*CSZ);
+  const x0=ix*CSZ/PPM,z0=iy*CSZ/PPM,x1=(ix+1)*CSZ/PPM,z1=(iy+1)*CSZ/PPM;for(const it of SL){const b=it.b;if(b[2]<x0||b[0]>x1||b[3]<z0||b[1]>z1)continue;it.fn(c)}
+  CHUNK.set(key,ch);return ch}
+
+// ================= SPRITES =================
+const SKINS=["#f1c7a5","#e3b08c","#c98d63","#a06a46","#75492f","#4e3122"],HAIRS=["#17110c","#3a2416","#5e3b1f","#9a6a38","#d2ae74","#8a3a1c","#26211e"],EYES=["#3b2a1a","#2d4a6a","#3e5a2e","#1c1410"];
+function drawCharPx(c,p,dir,st,off,o){const P=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y+off,w,h)};const side=dir==="left"||dir==="right",flip=dir==="right";const Q=(x,y,w,h,col)=>P(flip?12-x-w:x,y,w,h,col);
+  if(o.hat){P(5,-6,2,2,p.hatc);P(4,-4,4,2,p.hatc);P(1,-2,10,1,p.hatc);P(2,-1,8,1,shade(p.hatc,.8))}
+  const lo=st===1?1:0,ro=st===2?1:0;
+  if(!side){P(3,15,2,2-lo,p.dark);P(3,17-lo,2,1,p.shoe);P(7,15,2,2-ro,p.dark);P(7,17-ro,2,1,p.shoe)}
+  else{const a=st===1?-1:st===2?1:0;Q(4+a,15,2,2,p.dark);Q(3+a,17,3,1,p.shoe);Q(6-a,15,2,2,p.dark);Q(6-a,17,2,1,p.shoe)}
+  if(!side){P(2,7,8,7,p.robe);P(1,8,1,3,p.robe);P(10,8,1,3,p.robe);P(1,10,1,1,p.trim);P(10,10,1,1,p.trim);P(1,11,1,1,p.skin);P(10,11,1,1,p.skin);P(2,14,8,1,p.trim);P(3,6,6,1,p.trim);P(2,7,1,7,shade(p.robe,.8));
+    if(dir==="down"){P(6,7,1,3,p.trim);P(5,7,1,1,p.collar)}}
+  else{P(3,7,6,7,p.robe);P(3,14,6,1,p.trim);P(3,6,6,1,p.trim);const sw=st===1?1:st===2?-1:0;Q(5+sw,8,2,3,shade(p.robe,.8));Q(5+sw,10,2,1,p.trim);Q(5+sw,11,2,1,p.skin)}
+  if(dir==="down"){P(3,0,6,1,p.hair);P(2,1,8,2,p.hair);P(2,3,1,2,p.hair);P(9,3,1,2,p.hair);P(3,3,6,3,p.skin);P(4,4,1,1,p.eye);P(7,4,1,1,p.eye);P(5,5,2,1,shade(p.skin,.82));
+    if(o.style==="long"){P(2,5,1,3,p.hair);P(9,5,1,3,p.hair)}if(o.style==="bun")P(4,-1,4,1,p.hair);if(o.beard)P(4,5,4,2,p.hair)}
+  else if(dir==="up"){P(3,0,6,1,p.hair);P(2,1,8,5,p.hair);P(5,6,2,1,p.skin);if(o.style==="long")P(3,6,6,2,p.hair);if(o.style==="tail")P(5,6,2,3,p.hair);if(o.style==="bun")P(4,-1,4,2,p.hair)}
+  else{Q(3,0,6,1,p.hair);Q(2,1,8,2,p.hair);Q(6,3,3,3,p.hair);Q(2,3,4,3,p.skin);Q(1,4,1,1,p.skin);Q(3,4,1,1,p.eye);Q(5,6,2,1,p.skin);if(o.style==="tail")Q(9,3,1,3,p.hair);if(o.style==="long")Q(7,5,2,3,p.hair);if(o.style==="bun")Q(7,-1,3,2,p.hair);if(o.beard)Q(2,5,3,1,p.hair)}}
+function makeChar(o){const off=o.hat?6:1,W=12,H=18+off,out={W,H,off,f:{}};const base=Object.assign({collar:"#e9e6df",dark:"#24242a",shoe:"#16110d",hatc:"#45294f"},o);
+  const pals={n:base,w:Object.assign({},base,{skin:"#fff",hair:"#fff",robe:"#fff",trim:"#fff",dark:"#fff",shoe:"#fff",eye:"#fff",collar:"#fff",hatc:"#fff"}),i:Object.assign({},base,{robe:"#a8dcf0",trim:"#e2f6ff",dark:"#7fb6d0",hair:"#cfeaf6",hatc:"#a8dcf0"})};
+  for(const v in pals)for(const dir of["down","up","left","right"])for(let st=0;st<3;st++){const cn=document.createElement("canvas");cn.width=W;cn.height=H;drawCharPx(cn.getContext("2d"),pals[v],dir,st,off,o);out.f[v+dir+st]=cn}
+  return out}
+function randLook(extra){return Object.assign({skin:pick(SKINS),hair:pick(HAIRS),eye:pick(EYES),style:pick(["short","short","long","tail","bun"])},extra)}
+const dirOf=(dx,dz)=>Math.abs(dx)>Math.abs(dz)?(dx>0?"right":"left"):(dz>0?"down":"up");
+
+// ================= CHARACTERS =================
+const TEACH=CLASSES.map((c,i)=>{const[x,z]=LX(c.room,7.2,-7.2);addCol(x-.4,x+.4,z-.4,z+.4,2);return{x,z,i,dx:x,dz:z,dir:"down",spr:makeChar(randLook({robe:"#33244a",trim:"#c9a24a",hat:1,hair:pick(["#9a9a9a","#bdbdbd","#6e6e6e"]),beard:Math.random()<.6}))}});
+const NPCS=[],labelBox=$("labels");
+const spawnRooms=Object.keys(R).filter(k=>!["star","river","cata","warden"].includes(k)&&!R[k].house);
+NAMES.forEach((nm,i)=>{const h=HK[i%4],room=pick(spawnRooms);const extra=["ember","frost","gust","ward","mend"].sort(()=>Math.random()-.5).slice(0,1+Math.floor(Math.random()*2));
+  const lab=document.createElement("div");lab.className="nl";labelBox.appendChild(lab);
+  const n={nm,h,spr:makeChar(randLook({robe:"#25252b",trim:HOUSES[h].c})),x:X(room)+rand(-2,2),z:Z(room)+rand(-2,2),px:0,pz:0,ph:0,dir:"down",cast0:-9,room,path:[],wait:rand(0,4),state:"wander",hp:100,max:100,spells:["spark",...extra],cds:{},castT:2,ward:0,frozen:0,down:0,calm:0,strafe:1,strafeT:0,lab,los:true,losT:0,lv:{},wardLv:1,hitT:0};
+  n.spells.forEach(sp=>{const cap=Math.min(MAXLV,2+S.day);n.lv[sp]=Math.min(MAXLV,1+Math.floor(Math.pow(Math.random(),1.6)*cap))});n.max=n.hp=Math.round(170+12*(n.spells.reduce((a,x)=>a+n.lv[x],0)/n.spells.length-1));
+  NPCS.push(n)});
+// wandering staff wizards (never duel)
+[{nm:"Groundskeeper Bram",title:"Groundskeeper",look:{robe:"#5a4a32",trim:"#3d7a3a"},home:["gate","garden","orchard","mill","stones","moon","marsh","bridge","road","lake","tarn"],
+   lines:["Mind the Thornwood after dark. Things in there don't keep a schedule.","The windmill's been grinding thunderstorms again. Expect rain.","Those standing stones? Count them at night sometime."]},
+ {nm:"Librarian Sedge",title:"Librarian",look:{robe:"#2f4a3a",trim:"#c9a24a",hat:1,hatc:"#2f4a3a"},home:["lib","scrip","court","foyer"],
+   lines:["Books in the mirrors bite if you dog-ear them.","Some walls in my library are thinner than they look. Don't tell anyone I said that.","Quiet, please. The quills are concentrating."]},
+ {nm:"Caretaker Pell",title:"Caretaker",look:{robe:"#5c5c66",trim:"#8a8a94"},home:null,
+   lines:["Forty doors on that corridor and I've only got keys to one.","If you find a gold coin lying around, it's not mine. Probably.","Somebody keeps leaving frost on the Warden's door."]},
+ {nm:"Cook Rhoda",title:"Cook",look:{robe:"#e8e2d4",trim:"#b8433a"},home:["kitchen","refect","court","foyer"],
+   lines:["Supper's at six, don't be late, or you'll be staring at an empty plate.","Bread and pie and roasted hen, eat it all and come again.","Stir it left and stir it right, the stew won't bite, at least tonight."]}
+].forEach((d,i)=>{const room=d.home?d.home[0]:pick(spawnRooms);const lab=document.createElement("div");lab.className="nl";labelBox.appendChild(lab);
+  NPCS.push({nm:d.nm,title:d.title,staff:true,home:d.home,lines:d.lines,li:0,h:null,spr:makeChar(randLook(Object.assign({},d.look,d.title==="Groundskeeper"?{beard:true}:{}))),x:X(room)+rand(-2,2),z:Z(room)+rand(-2,2),px:0,pz:0,ph:0,dir:"down",room,path:[],wait:rand(0,4),state:"wander",hp:999,max:999,spells:[],cds:{},castT:9,ward:0,frozen:0,down:0,calm:1e9,lab,los:true,losT:0,lv:{},wardLv:1,hitT:0})});
+function roomAt(x,z){for(const k in R){const h=half(k);if(Math.abs(x-X(k))<=h&&Math.abs(z-Z(k))<=h)return k}return null}
+function corrAt(x,z){return CORR.find(c=>x>=c.r.x0&&x<=c.r.x1&&z>=c.r.z0&&z<=c.r.z1)}
+function doorPt(a,b){const[dx,dz]=DV[dirTo(a,b)];return[X(a)+dx*half(a),Z(a)+dz*half(a)]}
+function returnPath(n){const r=roomAt(n.x,n.z);if(r){n.room=r;return[[X(r)+rand(-1.5,1.5),Z(r)+rand(-1.5,1.5)]]}
+  const c=corrAt(n.x,n.z);if(c){const[a,b]=c.e;const da=Math.hypot(n.x-X(a),n.z-Z(a)),db=Math.hypot(n.x-X(b),n.z-Z(b));const end=da<db?a:b,oth=end===a?b:a;n.room=end;const p=c.r.ns?[c.r.mx,n.z]:[n.x,c.r.mz];return[p,doorPt(end,oth),[X(end),Z(end)]]}
+  return[[X(n.room),Z(n.room)]]}
+
+// ================= PLAYER & INPUT =================
+let P={x:X(S.cur),z:Z(S.cur)+4,dir:"up",ax:0,az:-1,hp:S.hp||100,ward:0,frozen:0,cds:{},sel:"spark",ph:0,spr:null};
+function playerSprite(){P.spr=makeChar(Object.assign(randLookFixed(),{robe:"#25252b",trim:S.house?HOUSES[S.house].c:"#777777"}))}
+function randLookFixed(){if(!S.look){S.look=randLook({});save()}return Object.assign({},S.look)}
+playerSprite();
+const keys={};let running=false,modal=false,lesson=null,now=0,lastHurt=-99,mouse={sx:-1,sy:-1,on:false};
+addEventListener("keydown",e=>{keys[e.code]=true;if(!running)return;if(e.code==="Escape"&&mapOpen){toggleMap();return}if(e.code==="Escape"&&!modal){pause();return}if(modal)return;
+  const n=parseInt(e.key);if(n>=1&&n<=6)selectSpell(ORDER[n-1]);if(e.code==="KeyE")interact();if(e.code==="KeyF")challenge();if(e.code==="Space"){e.preventDefault();cast()}});
+addEventListener("keyup",e=>{keys[e.code]=false});
+addEventListener("keydown",e=>{if(e.code==="Tab"){e.preventDefault();$("board").classList.toggle("show")}if(e.code==="KeyM"&&running){e.preventDefault();if(mapOpen)toggleMap();else toggleMini()}});
+$("pts").addEventListener("click",()=>$("board").classList.toggle("show"));$("mm").addEventListener("click",()=>{if(running)toggleMap()});$("mapbtn").addEventListener("click",()=>toggleMini());
+function toggleMini(){S.mini=!S.mini;syncMini();save()}function syncMini(){$("mm").classList.toggle("on",!!S.mini);$("mapbtn").classList.toggle("off",!!S.mini)}$("bigmap").addEventListener("click",()=>toggleMap());
+cv.addEventListener("mousemove",e=>{mouse.sx=e.clientX/SC;mouse.sy=e.clientY/SC;mouse.on=true});
+cv.addEventListener("mousedown",e=>{if(!running||modal)return;mouse.sx=e.clientX/SC;mouse.sy=e.clientY/SC;mouse.on=true;if(e.button===0)cast()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&running&&!modal)pause()});
+let joy={id:null,x:0,y:0,ax:0,ay:0};const joyEl=$("joy"),knob=joyEl.querySelector("i");
+cv.addEventListener("touchstart",e=>{for(const t of e.changedTouches){if(t.clientX<innerWidth*.45&&joy.id===null){joy.id=t.identifier;const b=joyEl.getBoundingClientRect();joy.x=b.left+60;joy.y=b.top+60}}e.preventDefault()},{passive:false});
+cv.addEventListener("touchmove",e=>{for(const t of e.changedTouches){if(t.identifier===joy.id){let dx=t.clientX-joy.x,dy=t.clientY-joy.y;const d=Math.hypot(dx,dy),m=50;if(d>m){dx*=m/d;dy*=m/d}joy.ax=dx/m;joy.ay=dy/m;knob.style.transform="translate("+dx+"px,"+dy+"px)"}}e.preventDefault()},{passive:false});
+cv.addEventListener("touchend",e=>{for(const t of e.changedTouches)if(t.identifier===joy.id){joy={id:null,x:0,y:0,ax:0,ay:0};knob.style.transform=""}});
+$("tcast").addEventListener("touchstart",e=>{e.preventDefault();if(running&&!modal)cast()},{passive:false});
+$("tuse").addEventListener("touchstart",e=>{e.preventDefault();if(running&&!modal)interact()},{passive:false});
+$("tduel").addEventListener("touchstart",e=>{e.preventDefault();if(running&&!modal)challenge()},{passive:false});
+
+// collision
+function blocked(x,z,r){for(const c of COL){if(c.off)continue;if(x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1)return true}return false}
+function moveC(o,dx,dz,r=.35){if(!blocked(o.x+dx,o.z,r))o.x+=dx;if(!blocked(o.x,o.z+dz,r))o.z+=dz}
+function pushC(o,ux,uz,dist){const reg=roomAt(o.x,o.z)||corrAt(o.x,o.z);const inside=(x,z)=>!reg?true:typeof reg==="string"?(Math.abs(x-X(reg))<=half(reg)-.4&&Math.abs(z-Z(reg))<=half(reg)-.4):(x>=reg.r.x0&&x<=reg.r.x1&&z>=reg.r.z0&&z<=reg.r.z1);
+  const n=Math.ceil(dist/.25),sx=ux*dist/n,sz=uz*dist/n;for(let i=0;i<n;i++){const px=o.x,pz=o.z;moveC(o,sx,sz);if(!inside(o.x,o.z)){o.x=px;o.z=pz;break}}}
+function guard(o){if(roomAt(o.x,o.z)||corrAt(o.x,o.z)){o.sx=o.x;o.sz=o.z}else if(o.sx!==undefined){o.x=o.sx;o.z=o.sz}}
+function wallHit(x,z){for(const c of COL){if(c.off||c.h<1.5)continue;if(x>c.x0&&x<c.x1&&z>c.z0&&z<c.z1)return true}return false}
+function los(ax,az,bx,bz){const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/.7);for(let i=1;i<n;i++){if(wallHit(ax+(bx-ax)*i/n,az+(bz-az)*i/n))return false}return true}
+// aim
+let offX=0,offY=0;
+function aimDir(){if(mouse.on&&!coarse){const wx=(mouse.sx+offX)/PPM,wz=(mouse.sy+offY)/PPM;const dx=wx-P.x,dz=wz-(P.z-.9),l=Math.hypot(dx,dz)||1;return[dx/l,dz/l]}
+  let tgt=null,bd=16;if(lesson){lesson.orbs.forEach(o=>{if(!o.hit){const d=Math.hypot(o.x-P.x,o.z-P.z);if(d<bd){bd=d;tgt=o}}})}
+  if(!tgt)NPCS.forEach(n=>{if(n.state==="down"||n.staff||(n.h===S.house&&n.state!=="duel"))return;const d=Math.hypot(n.x-P.x,n.z-P.z)*(n.state==="duel"?.5:1);if(d<bd&&los(P.x,P.z,n.x,n.z)){bd=d;tgt=n}});
+  if(tgt){const dx=tgt.x-P.x,dz=tgt.z-P.z,l=Math.hypot(dx,dz)||1;return[dx/l,dz/l]}return[P.ax,P.az]}
+
+// ================= UI =================
+let lastToast="",lastToastT=-9;function toast(t,cls=""){if(t===lastToast&&now-lastToastT<6)return;lastToast=t;lastToastT=now;const d=document.createElement("div");d.className="toast panel "+cls;d.textContent=t;$("toasts").appendChild(d);setTimeout(()=>d.remove(),3400);while($("toasts").children.length>2)$("toasts").firstChild.remove()}
+function award(h,n,why){S.points[h]=Math.max(0,S.points[h]+n);drawBoard();if(h===S.house){const f=document.createElement("span");f.className="fl "+(n>0?"up":"dn");f.textContent=(n>0?"+":"")+n;$("pts").appendChild(f);setTimeout(()=>f.remove(),1500);if(Math.abs(n)>=10)toast((n>0?"+":"")+n+" points: "+why,n>0?"plus":"minus")}save()}
+function drawBoard(){if(S.house){const order=HK.slice().sort((a,b)=>S.points[b]-S.points[a]),pl=order.indexOf(S.house)+1;$("pts").innerHTML="<b>"+HOUSES[S.house].n+": "+S.points[S.house]+"</b> pts, "+["","1st","2nd","3rd","4th"][pl]+" place ("+(coarse?"tap":"Tab")+" for standings)"}else $("pts").textContent="";$("rows").innerHTML=HK.slice().sort((a,b)=>S.points[b]-S.points[a]).map(h=>'<div class="hrow'+(h===S.house?" me":"")+'"><i style="background:'+HOUSES[h].c+'"></i><span>'+HOUSES[h].n+(S.cups[h]?'<em class="cups" title="House cups won">'+S.cups[h]+'</em>':'')+'</span><b>'+S.points[h]+'</b></div>').join("");
+  const cd=Math.ceil(S.day/10)*10,left=cd-S.day;$("cupline").textContent="House cup: end of day "+cd+(left?" ("+left+" day"+(left>1?"s":"")+" after today)":" (tonight)")}
+let barHover=false;$("bar").addEventListener("mouseenter",()=>barHover=true);$("bar").addEventListener("mouseleave",()=>barHover=false);
+function buildBar(){$("bar").innerHTML="";ORDER.forEach((id,i)=>{const b=document.createElement("button");b.className="slot";b.dataset.id=id;b.innerHTML='<span class="k">'+(i+1)+'</span><span class="lv"></span><span class="nm"></span><div class="cd"></div><div class="xpb"><i></i></div>';
+  b.addEventListener("click",e=>{e.stopPropagation();selectSpell(id)});b.addEventListener("touchstart",e=>{e.stopPropagation()},{passive:true});$("bar").appendChild(b)});refreshBar()}
+const known=id=>S.spells.includes(id)||(lesson&&lesson.spell===id);
+const plv=id=>S.lvl[id]||1;
+const xpNeed=lv=>4+2*(lv-1);
+function lvMethod(id){const nl=plv(id)+1;if(id==="spark")return nl%2===0?"use":"duels";return nl%2===0?"class":"use"}
+const METHOD_WORD={use:"practice",class:"class",duels:"duels"};
+function levelUp(id){const nl=Math.min(MAXLV,plv(id)+1);S.lvl[id]=nl;S.xp[id]=0;if(id==="spark")S.winBase=S.wins;
+  award(S.house,nl===MAXLV?40:nl===10?30:10+Math.min(nl,10),nl===MAXLV||nl===10?"reached level "+nl+" in "+SPELLS[id].n:"reached "+SPX(id,nl).n);
+  toast(SPX(id,nl).n+": "+descFor(id,nl)+"."+(nl<MAXLV?" Next level comes from "+METHOD_WORD[lvMethod(id)]+".":""),"plus");refreshBar();save()}
+function gainXP(id,amt){if(!S.spells.includes(id)||plv(id)>=MAXLV||lvMethod(id)!=="use")return;S.xp[id]=(S.xp[id]||0)+amt;if(S.xp[id]>=xpNeed(plv(id)))levelUp(id);else refreshBar()}
+function howNext(id){const l=plv(id);if(!S.spells.includes(id)){const c=CLASSES[CLASSFOR[id]];return"Learn it in "+c.s+" at "+fmt(c.h*60)+" in the "+R[c.room].n}
+  if(l>=MAXLV)return"Max level reached";const m=lvMethod(id);if(m==="use"){const need=xpNeed(l),have=Math.floor((S.xp[id]||0)*4)/4,how=id==="ward"?"Block spells with it":id==="mend"?"Heal yourself with it when hurt":"Hit students with it";return"Next level (practice): "+how+" ("+have+" of "+need+")."+(id==="ward"||id==="mend"?"":" Knockouts count extra, practice dummies count a little.")}if(m==="duels"){const need=Math.max(1,2-(S.wins-(S.winBase||0)));return"Next level (duels): win "+need+" more duel"+(need===1?"":"s")+" against rival students"}
+  const i=CLASSFOR[id],c=CLASSES[i],later=S.att.checked.includes(i)||S.minute>=c.h*60+60;return"Next level (class): attend "+c.s+(later?" tomorrow":" today")+" at "+fmt(c.h*60)+" in the "+R[c.room].n}
+function updSinfo(){const id=P.sel,el=$("sinfo");el.classList.toggle("show",sinfoT>now||barHover);if(!known(id)){el.innerHTML="";return}const lv=S.spells.includes(id)?plv(id):1;
+  el.innerHTML="<b>"+SPX(id,lv).n+"</b> (level "+lv+" of "+MAXLV+"): "+descFor(id,lv)+'<br><span class="nx">'+howNext(id)+"</span>"}
+function refreshBar(){[...$("bar").children].forEach(b=>{const id=b.dataset.id,k=known(id),lv=k&&S.spells.includes(id)?plv(id):1;b.querySelector(".nm").textContent=k?SPX(id,lv).n:CLASSES[CLASSFOR[id]].s;b.querySelector(".lv").textContent=k?"Lv "+lv:"";
+  b.style.display=k?"":"none";{const xb=b.querySelector(".xpb");if(xb){const on=S.spells.includes(id)&&plv(id)<MAXLV&&lvMethod(id)==="use";xb.style.display=on?"":"none";if(on)xb.querySelector("i").style.width=Math.min(100,(S.xp[id]||0)/xpNeed(plv(id))*100)+"%"}}b.className="slot"+(P.sel===id?" sel":"")+(k?"":" lock")+(lv>=2?" l2":"")+(lesson&&lesson.spell===id&&!S.spells.includes(id)?" temp":"");
+  b.title=!k?"Learn in "+CLASSES[CLASSFOR[id]].s:SPX(id,lv).n+": "+descFor(id,lv)+". "+howNext(id)})}
+let sinfoT=-9;function selectSpell(id){sinfoT=now+5;if(!known(id)){const c=CLASSES[CLASSFOR[id]];toast("Learn this in "+c.s+" ("+R[c.room].n+", "+fmt(c.h*60)+")");return}P.sel=id;refreshBar()}
+function showCard(html){$("card").innerHTML=html;$("overlay").classList.remove("hide");modal=true}
+function hideCard(){$("overlay").classList.add("hide");modal=false}
+function startScreen(){showCard('<h1>Thornhollow Academy</h1><p>A school of magic on the sea cliffs. Get sorted into a house, attend classes to learn spells, duel rival students, and win points for your house.</p>'+
+  '<div class="keys">'+(coarse?'<b>Left thumb</b> move, <b>Cast</b> to cast (aims at the nearest target), <b>Use</b> to interact, <b>Duel</b> to challenge. Tap spells to pick one.':'<b>WASD</b> or arrows move, <b>Shift</b> run, <b>mouse</b> aim, <b>click</b> or <b>Space</b> cast, <b>1 to 6</b> pick a spell, <b>E</b> interact, <b>F</b> challenge a student, <b>Esc</b> pause')+'</div>'+
+  '<div class="row">'+(hadSave?'<button class="primary" id="go">Continue</button><button id="newg">New game</button>':'<button class="primary" id="go">Begin</button>')+'</div>');
+  $("go").onclick=begin;if($("newg"))$("newg").onclick=()=>{S=fresh();save();location.reload()}}
+function begin(){hideCard();running=true;const r0=roomAt(P.x,P.z);if(r0)showBanner(R[r0].n,"");if(!S.house&&S.seen.length<=1)toast("Find the sorting book in the Foyer of echoes, just north of here. Follow the red dot.")}
+function pause(){showCard('<h2>Paused</h2><p>'+(S.house?"House "+HOUSES[S.house].n+". ":"")+'Day '+S.day+', '+fmt(S.minute)+'. Secrets found: '+S.secrets.filter(x=>SECRETS_ALL.includes(x)).length+' of '+SECRETS_ALL.length+'.</p><div class="row"><button class="primary" id="res">Resume</button><button id="newg">New game</button></div>');
+  $("res").onclick=()=>hideCard();$("newg").onclick=()=>{S=fresh();save();location.reload()}}
+
+// ================= GAMEPLAY =================
+const BOOK=LX("foyer",6,-6);
+function sortMe(){const h=pick(HK);showCard('<h2>The sorting book</h2><div class="book"><div></div></div><p>The pages turn on their own...</p>');
+  setTimeout(()=>{S.house=h;save();playerSprite();$("card").innerHTML='<h2>The sorting book</h2><div class="crest" style="color:'+HOUSES[h].c+'">House '+HOUSES[h].n+'</div><p>'+HOUSES[h].line+'</p><p>Earn points by attending classes, learning spells, exploring, and winning duels. Lose them by skipping class, showing up late, and losing duels.</p><div class="row"><button class="primary" id="ok">Join the '+HOUSES[h].n+'</button></div>';
+    $("ok").onclick=()=>{hideCard();drawBoard();award(h,5,"welcome to the house");syncLocks()}},2000)}
+function curClass(){const m=S.minute;return CLASSES.findIndex(c=>m>=c.h*60&&m<c.h*60+60)}
+function nearT(){if(dinnerOn())return null;return TEACH.find(t=>Math.hypot(P.x-t.x,P.z-t.z)<3.2)}
+function teacherTalk(i){const c=CLASSES[i],cur=curClass();
+  if(!S.house){toast(c.prof+": Get sorted first. The book is in the Foyer of echoes.");return}
+  if(cur!==i){toast(c.prof+": "+c.s+" meets here at "+fmt(c.h*60)+(S.minute>=c.h*60+60?" tomorrow.":". Don't be late."));return}
+  if(S.att.checked.includes(i)){toast(lesson&&lesson.idx===i?c.prof+": "+c.task:c.prof+": You've finished today's lesson. Well done.");return}
+  S.att.checked.push(i);if(S.minute>c.h*60+15)award(S.house,-5,"late to "+c.s);startLesson(i);save()}
+function startLesson(i){const c=CLASSES[i],cx=X(c.room),cz=Z(c.room),cur=plv(c.spell),adv=S.spells.includes(c.spell)&&cur<MAXLV&&lvMethod(c.spell)==="class",need=adv?Math.min(10,3+Math.ceil(cur/2)):3;const orbs=[];
+  for(let k=0;k<need;k++){if(adv)orbs.push({orbit:1,cx,cz,r:rand(4,7.5),ph:k/need*Math.PI*2,s:rand(.35,.6)*(1+Math.min(cur,12)*.1)*(k%2?1:-1),x:cx,z:cz,hit:false});
+    else{const[a,b]=[[-5,-5],[-5,5],[5,5]][k];orbs.push({orbit:0,x:cx+a+rand(-1,1),z:cz+b+rand(-1,1),hit:false})}}
+  lesson={idx:i,spell:c.spell,orbs,hits:0,need,adv,col:hex(SPELLS[c.spell].col||0xffe1a0)};P.sel=c.spell;refreshBar();
+  toast(adv?c.prof+": Advanced lesson. Hit all "+need+" moving targets to reach "+SPX(c.spell,cur+1).n+".":c.prof+": "+(S.spells.includes(c.spell)?"Practice day. ":"Today, "+SPELLS[c.spell].n+". ")+c.task)}
+function lessonHit(dx,dz){if(!lesson||P.sel!==lesson.spell)return;for(const o of lesson.orbs){if(o.hit)continue;const vx=o.x-P.x,vz=(o.z-1.6)-(P.z-.9),t=vx*dx+vz*dz;if(t<0||t>30)continue;const px=vx-dx*t,pz=vz-dz*t;if(Math.hypot(px,pz)<1){o.hit=true;lesson.hits++;toast("Target "+lesson.hits+" of "+lesson.need);break}}
+  if(lesson.hits>=lesson.need)finishLesson()}
+function finishLesson(){const c=CLASSES[lesson.idx],adv=lesson.adv;const isNew=!S.spells.includes(c.spell);lesson=null;
+  if(isNew){S.spells.push(c.spell);award(S.house,10,"learned "+SPELLS[c.spell].n);toast(c.prof+": Excellent. "+SPELLS[c.spell].n+" is yours now. Press "+(ORDER.indexOf(c.spell)+1)+" to use it."+" Some levels come from classes, others from using it.")}
+  else if(adv){toast(c.prof+": Superb work.");levelUp(c.spell)}
+  else award(S.house,5,"practiced "+SPX(c.spell,plv(c.spell)).n);refreshBar();save()}
+function failLesson(){if(!lesson)return;const c=CLASSES[lesson.idx];lesson=null;if(!S.spells.includes(P.sel))P.sel="spark";refreshBar();toast(c.s+" is over. You'll have to try again tomorrow.")}
+
+// spells
+const PROJ=[],FX=[];
+function fire(owner,id,x,z,dx,dz,lv=1){const sp=SPX(id,lv);PROJ.push({owner,id,lv,x:x+dx*.6,z:z+dz*.6,vx:dx*sp.spd,vz:dz*sp.spd,life:2.4,col:hex(sp.col),r:sp.size})}
+function reflect(owner,fx,fz,tx,tz,id,lv){const dx=tx-fx,dz=tz-fz,l=Math.hypot(dx,dz)||1;fire(owner,id,fx,fz,dx/l,dz/l,lv)}
+let flashT=0;
+function cast(){if(P.frozen>now){toast("You can't move your wand.");return}const id=P.sel;if(!known(id))return;const lv=S.spells.includes(id)?plv(id):1,sp=SPX(id,lv);if((P.cds[id]||0)>now)return;
+  P.cds[id]=now+((lesson&&lesson.spell===id)?Math.min(sp.cd,1.2):sp.cd);flashT=.12;const[dx,dz]=aimDir();P.ax=dx;P.az=dz;if(!P.seated)P.dir=dirOf(dx,dz);
+  if(sp.type==="bolt"){const ox=P.x,oz=P.z-.9;if(sp.spread){const h=(sp.spread-1)/2;for(let k=-h;k<=h;k++){const a=k*.07,c=Math.cos(a),s=Math.sin(a);fire("p",id,ox,oz,dx*c-dz*s,dx*s+dz*c,lv)}}else fire("p",id,ox,oz,dx,dz,lv)}
+  else if(id==="ward"){P.ward=now+sp.dur;P.wardLv=lv;P.wardHits=sp.hits}else if(id==="mend"){if(100-P.hp>=10)gainXP("mend",1);P.hp=Math.min(100,P.hp+sp.heal);if(sp.hot)P.hot=now+5;if(sp.cleanse)P.frozen=0;FX.push({x:P.x,z:P.z-.8,t:0,r:1.6,col:"120,255,150"})}
+  if(lesson)lessonHit(dx,dz)}
+function hitNpc(n,id,vx,vz,lv=1){if(n.state==="down")return;if(n.staff){n.hitT=now+.15;if(S.house&&now>(n.scold||0)){n.scold=now+30;award(S.house,-5,"hexing the "+n.title.toLowerCase())}toast(n.nm+": Oi! Watch where you point that wand.");return}const sp=SPX(id,lv);
+  if(n.ward>now){const w=SPX("ward",n.wardLv||1);n.wardHits=(n.wardHits||1)-1;if(n.wardHits<=0)n.ward=0;
+    gainXP(id,.5);if(w.reflect){reflect(n,n.x,n.z-.9,P.x,P.z-.9,id,Math.min(MAXLV,lv+w.rboost));toast(n.nm+"'s "+w.n+" threw your "+sp.n+" back.")}else toast(n.nm+" blocked it with Ward.");startDuel(n,true);return}
+  if(sp.freeze)n.frozen=now+sp.freeze;if(sp.aoe)NPCS.forEach(o=>{if(o!==n&&o.state!=="down"&&!o.staff&&Math.hypot(o.x-n.x,o.z-n.z)<sp.aoe){o.frozen=now+sp.freeze*.7;gainXP(id,.5);if(o.state!=="duel")startDuel(o,true)}});
+  if(sp.stun)n.frozen=Math.max(n.frozen,now+sp.stun);if(sp.wide)NPCS.forEach(o=>{if(o!==n&&o.state!=="down"&&!o.staff){const dx=o.x-n.x,dz=o.z-n.z,dd=Math.hypot(dx,dz);if(dd<sp.wide){gainXP(id,.5);pushC(o,dx/(dd||1),dz/(dd||1),sp.push*.6);o.frozen=Math.max(o.frozen,now+(sp.stun||1));if(o.state!=="duel")startDuel(o,true)}}});
+  if(sp.push){const l=Math.hypot(vx,vz)||1;pushC(n,vx/l,vz/l,sp.push)}n.castT=Math.max(n.castT,sp.push?1.2:0);
+  if(dinnerOn()&&S.house&&roomAt(P.x,P.z)==="refect"&&!S.att.dinnerFight){S.att.dinnerFight=true;award(S.house,-10,"started a fight at dinner")}
+  gainXP(id,1);
+  hurtNpc(n,sp.dmg*(S.fedDay>=S.day?1.1:1),id)}
+function hurtNpc(n,dmg,id){if(n.state==="down"||n.staff)return;n.hp-=dmg;n.hitT=now+.15;if(n.state!=="duel")startDuel(n,true);
+  if(n.hp<=0){n.state="down";n.down=now+75;if(id)gainXP(id,3);
+    if(S.house&&n.h!==S.house){award(S.house,15,"beat "+n.nm+" in a duel");S.points[n.h]=Math.max(0,S.points[n.h]-5);drawBoard();S.wins=(S.wins||0)+1;if(S.winBase==null)S.winBase=S.wins-1;
+      if(plv("spark")<MAXLV&&lvMethod("spark")==="duels"&&S.wins-S.winBase>=2)levelUp("spark");refreshBar();save()}else toast("You beat "+n.nm+".")}}
+function hitPlayer(id,n,lv=1){const sp=SPX(id,lv);if(P.ward>now){gainXP("ward",1);const w=SPX("ward",P.wardLv||1);P.wardHits=(P.wardHits||1)-1;if(P.wardHits<=0)P.ward=0;
+  if(w.reflect&&n.state!=="down"){reflect("p",P.x,P.z-.9,n.x,n.z-.9,id,Math.min(MAXLV,lv+w.rboost));toast(w.n+" threw "+n.nm+"'s "+sp.n+" back.")}else toast("Your Ward absorbed "+n.nm+"'s "+sp.n+".");return}
+  hurtPlayer(sp.dmg,n);if(P.hp<=0)return;
+  if(sp.freeze)P.frozen=now+sp.freeze*.6;if(sp.stun)P.frozen=Math.max(P.frozen,now+sp.stun*.6);if(sp.push){const l=Math.hypot(P.x-n.x,P.z-n.z)||1;pushC(P,(P.x-n.x)/l,(P.z-n.z)/l,sp.push)}}
+let hurtT=0;
+function hurtPlayer(dmg,n){if(P.hp<=0)return;P.hp-=dmg;lastHurt=now;hurtT=.25;if(P.hp<=0)playerDown(n)}
+function explode(x,z,p,hitN){const sp=SPX(p.id,p.lv);FX.push({x,z,t:0,r:sp.splash,col:"255,140,50"});
+  if(p.owner==="p"){NPCS.forEach(n=>{if(n!==hitN&&n.state!=="down"&&!n.staff&&Math.hypot(n.x-x,n.z-z)<sp.splash){gainXP(p.id,.5);hurtNpc(n,sp.splashDmg,p.id)}})}
+  else if(hitN!=="player"&&P.ward<=now&&Math.hypot(P.x-x,P.z-z)<sp.splash)hurtPlayer(sp.splashDmg,p.owner)}
+function playerDown(n){P.hp=0;$("fade").style.opacity=1;modal=true;if(P.seated)standUp();
+  if(S.house){award(S.house,-10,"lost a duel to "+n.nm);if(n.h!==S.house){S.points[n.h]+=5;drawBoard()}}
+  NPCS.forEach(o=>{if(o.state==="duel"){o.state="return";o.path=returnPath(o);o.calm=now+40}});
+  setTimeout(()=>{P.x=X("apoth")-6;P.z=Z("apoth")-3;P.hp=100;P.frozen=0;$("fade").style.opacity=0;modal=false;toast("You wake up in the apothecary.")},1400)}
+function startDuel(n,byPlayer){if(n.state==="duel"||n.state==="down"||n.staff)return;if(n.seat){n.seat.taken=null;n.seat=null}n.seated=false;n.dinner=false;n.state="duel";n.castT=byPlayer?.6:1.3;n.path=[];
+  toast(byPlayer?n.nm+" ("+HOUSES[n.h].n+") fights back.":n.nm+" ("+HOUSES[n.h].n+") challenges you to a duel.")}
+function challenge(){if(!S.house){toast("Get sorted before you start duels.");return}const[ax,az]=coarse?[0,0]:aimDir();let best=null,bd=99;
+  NPCS.forEach(n=>{if(n.state==="down"||n.staff)return;const dx=n.x-P.x,dz=n.z-P.z,dist=Math.hypot(dx,dz);if(dist>12)return;const dot=coarse?1:(dx*ax+dz*az)/(dist||1);if(dot>.8&&dist<bd){bd=dist;best=n}});
+  if(!best){toast(coarse?"No student close enough to challenge.":"Aim at a student nearby to challenge them.");return}
+  if(best.h===S.house){toast(best.nm+" is one of your housemates. Save it for the rivals.");return}
+  if(best.state==="duel")return;if(best.seat){best.seat.taken=null;best.seat=null}best.seated=false;best.dinner=false;toast("You challenge "+best.nm+".");best.state="duel";best.castT=1;best.path=[]}
+function npcCast(n){let id="spark";n.cast0=now;const Lv=s=>n.lv[s]||1;
+  if(n.hp<n.max*.5&&n.spells.includes("mend")&&(n.cds.mend||0)<now){const m=SPX("mend",Lv("mend"));n.cds.mend=now+m.cd+2;n.hp=Math.min(n.max,n.hp+m.heal);FX.push({x:n.x,z:n.z-.8,t:0,r:1.6,col:"120,255,150"});return}
+  if(n.spells.includes("ward")&&(n.cds.ward||0)<now&&Math.random()<.25){const w=SPX("ward",Lv("ward"));n.cds.ward=now+w.cd+2;n.wardLv=Lv("ward");n.ward=now+w.dur;n.wardHits=w.hits;return}
+  const off=n.spells.filter(s=>SPELLS[s].type==="bolt"&&(n.cds[s]||0)<now);if(off.length)id=pick(off);const lv=Lv(id),sp=SPX(id,lv);n.cds[id]=now+sp.cd*1.6;
+  const tx=P.x+rand(-.9,.9),tz=P.z+rand(-.9,.9),dx=tx-n.x,dz=tz-n.z,l=Math.hypot(dx,dz)||1,ux=dx/l,uz=dz/l;
+  if(sp.spread){const h=(sp.spread-1)/2;for(let k=-h;k<=h;k++){const a=k*.07,c=Math.cos(a),s=Math.sin(a);fire(n,id,n.x,n.z-.9,ux*c-uz*s,ux*s+uz*c,lv)}}else fire(n,id,n.x,n.z-.9,ux,uz,lv)}
+
+// dinner, dorms, markers
+const DIN={start:18*60,end:19*60+30},TROWS={wolves:[-8,0],herons:[-4,0],foxes:[4,1],bears:[8,1]},SEATS={};
+HK.forEach(h=>{const[z,split]=TROWS[h],cx=X("refect"),cz=Z("refect"),xs=split?[-12.2,-10.8,-9.4,-8,-6.6,-5.2,-3.8,3.8,5.2,6.6,8,9.4,10.8,12.2]:[-10.5,-9,-7.5,-6,-4.5,-3,-1.5,0,1.5,3,4.5,6,7.5,9,10.5];
+  const list=[];xs.forEach(x=>[-1,1].forEach(sd=>list.push({x:cx+x,z:cz+z+sd*1.1,dir:sd<0?"down":"up",taken:null})));list.sort((a,b)=>Math.abs(a.x-cx)-Math.abs(b.x-cx));SEATS[h]=list});
+(function(){const cx=X("refect"),cz=Z("refect");HK.forEach(h=>{const[z,split]=TROWS[h];(split?[[-12.5,-3.5],[3.5,12.5]]:[[-11.2,11.2]]).forEach(([a,b])=>{let k=0;for(let x=a;x<=b;x+=1.8,k++)FOODS.push({x:cx+x,z:cz+z,k:k%4})})})})();
+function dinnerOn(){return S.minute>=DIN.start&&S.minute<DIN.end}
+function goDinner(){return S.minute>=DIN.start-12&&S.minute<DIN.end}
+function routeTo(from,to){if(from===to)return[];const prev={[from]:null},q=[from];while(q.length){const a=q.shift();if(a===to)break;npcNbrs(a).forEach(b=>{if(!(b in prev)){prev[b]=a;q.push(b)}})}
+  if(!(to in prev))return null;const chain=[];for(let k=to;k;k=prev[k])chain.unshift(k);const pts=[];for(let i=0;i<chain.length-1;i++){const a=chain[i],b=chain[i+1];pts.push(doorPt(a,b),doorPt(b,a),[X(b),Z(b)])}return pts}
+const aisleX=x=>X("refect")+(x>=X("refect")?13.8:-13.8);
+function nearSeat(){if(!S.house||!dinnerOn())return null;let best=null,bd=2.6;SEATS[S.house].forEach(st=>{if(st.taken&&st.taken!=="p")return;const d=Math.hypot(P.x-st.x,P.z-st.z);if(d<bd){bd=d;best=st}});return best}
+function sitDown(st){if(P.seat)P.seat.taken=null;st.taken="p";P.seat=st;P.seated=true;P.x=st.x;P.z=st.z;P.dir=st.dir;
+  if(!S.att.ate){S.att.ate=true;P.hp=100;S.fedDay=S.day+1;award(S.house,5,"ate dinner with your house");toast("You eat roast chicken, warm bread, and apple pie. Well fed: faster healing and 10% stronger spells through tomorrow.")}else toast("You sit with the "+HOUSES[S.house].n+".");save()}
+function standUp(){if(!P.seated)return;P.seated=false;P.z+=P.seat.dir==="down"?-.9:.9;P.seat.taken=null;P.seat=null}
+function nearBed(){if(!S.house)return null;return BEDS.find(b=>b.h===S.house&&Math.hypot(P.x-b.x,P.z-b.z)<1.9)||null}
+function sleepNow(){if(S.minute<DIN.end){toast("It's too early for bed. You can sleep after dinner ("+fmt(DIN.end)+").");return}
+  $("fade").style.opacity=1;modal=true;setTimeout(()=>{S.minute=1200;P.hp=100;modal=false;tickTime(0);$("fade").style.opacity=0;toast("You sleep soundly and wake up for day "+S.day+".")},900)}
+let NEXT=null;
+function goalDot(){if(!S.house)return{x:BOOK[0],z:BOOK[1],col:"#ff2020"};if(NEXT)return{x:NEXT.x,z:NEXT.z,col:"#ff2020"};if(DORM[S.house])return{x:DORM[S.house].x,z:DORM[S.house].z,col:"#22dd55"};return null}
+function nextActivity(){if(!S.house)return null;const m=S.minute;const acts=CLASSES.map((c,i)=>({key:"c"+i,name:c.s,where:"the "+R[c.room].n,start:c.h*60,end:c.h*60+60,x:TEACH[i].dx,z:TEACH[i].dz,done:S.att.checked.includes(i)}));
+  const st=SEATS[S.house].find(q=>!q.taken||q.taken==="p")||SEATS[S.house][0];acts.push({key:"din",name:"dinner",where:"your house table in the Grand dining hall",start:DIN.start,end:DIN.end,x:st.x,z:st.z,done:!!S.att.ate});
+  return acts.find(a=>!a.done&&m>=a.start-60&&m<a.end)||null}
+function updNext(){const a=nextActivity();NEXT=a;if(a){S.att.mk=S.att.mk||[];if(!S.att.mk.includes(a.key)){S.att.mk.push(a.key);toast("Head to "+a.where+" for "+a.name+" at "+fmt(a.start)+". Follow the red dot.")}}}
+function interact(){
+  {const bd=nearBed();if(bd){sleepNow();return}}
+  if(dinnerOn()&&S.house&&!P.seated){const st=nearSeat();if(st){sitDown(st);return}if(roomAt(P.x,P.z)==="refect"){const near=HK.find(h=>h!==S.house&&SEATS[h].some(q=>Math.hypot(P.x-q.x,P.z-q.z)<2));if(near){toast("That's the "+HOUSES[near].n+" table. Yours has the "+HOUSES[S.house].n+" banners.");return}}}
+  if(Math.hypot(P.x-BOOK[0],P.z-BOOK[1])<2.6){if(!S.house)sortMe();else toast("The book has already placed you with the "+HOUSES[S.house].n+".");return}
+  const f=FIRES.find(f=>Math.hypot(P.x-f.x,P.z-f.z)<3);if(f&&R[f.k].house===S.house){P.hp=100;toast("You rest by the fire. Fully healed.");return}
+  {const sf=NPCS.find(n=>n.staff&&Math.hypot(P.x-n.x,P.z-n.z)<2.2);if(sf){toast(sf.nm+": "+sf.lines[sf.li++%sf.lines.length]);sf.wait=Math.max(sf.wait,3);sf.dir=dirOf(P.x-sf.x,P.z-sf.z);return}}
+  if(secretInteract())return;
+  const t=nearT();if(t){teacherTalk(t.i);return}
+  const b=BLOCK.find(b=>!b.open&&Math.hypot(P.x-b.x,P.z-b.z)<3.5);if(b){toast(lockMsg(b.e[2]));return}}
+
+// ================= NPC UPDATE =================
+function updateNpc(n,dt){
+  if(n.state==="down"){if(now>n.down){const r=pick(spawnRooms.filter(k=>k!==roomAt(P.x,P.z)));n.room=r;n.x=X(r);n.z=Z(r);n.hp=n.max;n.state="wander";n.path=[];n.calm=now+30}return}
+  if(n.frozen>now)return;
+  if(n.state==="duel"){const dx=P.x-n.x,dz=P.z-n.z,d=Math.hypot(dx,dz);n.dir=dirOf(dx,dz);
+    if(d>34||modal&&P.hp<=0){n.state="return";n.path=returnPath(n);n.calm=now+30;if(d>34)toast(n.nm+" gave up the chase.");return}
+    n.strafeT-=dt;if(n.strafeT<=0){n.strafe=Math.random()<.5?-1:1;n.strafeT=rand(1,2.5)}
+    let mx=0,mz=0;const ux=dx/(d||1),uz=dz/(d||1);if(d>13){mx+=ux;mz+=uz}else if(d<7){mx-=ux;mz-=uz}mx+=-uz*n.strafe*.8;mz+=ux*n.strafe*.8;
+    if(n.hp<n.max*.35){mx-=ux*.8;mz-=uz*.8}
+    const ml=Math.hypot(mx,mz)||1;moveC(n,mx/ml*3.4*dt,mz/ml*3.4*dt);guard(n);
+    if(n.dash>now){moveC(n,n.dvx*8*dt,n.dvz*8*dt);guard(n)}
+    else if(now>(n.dodgeCd||0)){for(const p of PROJ){if(p.owner!=="p")continue;const rx=n.x-p.x,rz=(n.z-.9)-p.z,dist=Math.hypot(rx,rz);if(dist>8)continue;const sp=Math.hypot(p.vx,p.vz)||1,vx=p.vx/sp,vz=p.vz/sp,along=rx*vx+rz*vz;if(along<0)continue;const perp=rx*vz-rz*vx;if(Math.abs(perp)>1.3)continue;
+      const r=Math.random();if(r<.25&&n.spells.includes("ward")&&(n.cds.ward||0)<now){const w=SPX("ward",n.lv.ward||1);n.cds.ward=now+w.cd+2;n.wardLv=n.lv.ward||1;n.ward=now+w.dur;n.wardHits=w.hits;n.dodgeCd=now+1.2}
+      else if(r<.75){const sg=perp>=0?1:-1;n.dvx=vz*sg;n.dvz=-vx*sg;n.dash=now+.3;n.dodgeCd=now+1.3}else n.dodgeCd=now+.5;break}}
+    n.losT-=dt;if(n.losT<=0){n.los=los(n.x,n.z,P.x,P.z);n.losT=.3}
+    n.castT-=dt;if(n.castT<=0&&n.los&&d<30){npcCast(n);n.castT=rand(1.1,2.2)}
+  }else if(n.state==="wander"&&!n.staff&&(goDinner()||n.dinner)){
+    if(goDinner()&&!n.dinner&&!n.path.length){const r=routeTo(n.room,"refect");if(r){const seat=SEATS[n.h].find(st=>!st.taken);if(seat){seat.taken=n;n.seat=seat;n.dinner=true;n.path=r.concat([[aisleX(seat.x),Z("refect")],[aisleX(seat.x),seat.z],[seat.x,seat.z]]);n.room="refect"}}}
+    if(!goDinner()&&n.dinner){n.dinner=false;if(n.seat){if(n.seated)n.path=[[aisleX(n.seat.x),n.seat.z],[aisleX(n.seat.x),Z("refect")],[X("refect"),Z("refect")]];n.seat.taken=null;n.seat=null}n.seated=false;n.wait=rand(1,4)}
+    if(n.path.length){const[tx,tz]=n.path[0];const dx=tx-n.x,dz=tz-n.z,d=Math.hypot(dx,dz);if(d<.3)n.path.shift();else{const sp2=Math.min(d,(Math.hypot(P.x-n.x,P.z-n.z)>25?12:4)*dt);n.x+=dx/d*sp2;n.z+=dz/d*sp2;n.dir=dirOf(dx,dz)}}
+    else if(n.dinner&&n.seat&&!n.seated){n.seated=true;n.x=n.seat.x;n.z=n.seat.z;n.dir=n.seat.dir}
+  }else{
+    if(n.path.length){const[tx,tz]=n.path[0];const dx=tx-n.x,dz=tz-n.z,d=Math.hypot(dx,dz);if(d<.3){n.path.shift();if(!n.path.length){n.wait=rand(2,6);if(n.state==="return")n.state="wander"}}else{const s=Math.min(d,2.1*dt);n.x+=dx/d*s;n.z+=dz/d*s;n.dir=dirOf(dx,dz)}}
+    else if((n.wait-=dt)<=0){const nb=npcNbrs(n.room).filter(b=>!n.home||n.home.includes(b));if(nb.length&&Math.random()<.6){const b=pick(nb);n.path=[doorPt(n.room,b),doorPt(b,n.room),[X(b)+rand(-2,2),Z(b)+rand(-2,2)]];n.room=b}else{const ax=Math.random()<.5;n.path=[[X(n.room)+(ax?rand(-6,6):rand(-1,1)),Z(n.room)+(ax?rand(-1,1):rand(-6,6))]]}}
+    if(S.house&&!n.staff&&n.h!==S.house&&n.calm<now&&!lesson&&!modal&&!dinnerOn()){const d=Math.hypot(P.x-n.x,P.z-n.z);if(d<8&&Math.random()<.07*dt){n.losT-=dt;if(n.losT<=0){n.los=los(n.x,n.z,P.x,P.z);n.losT=.5}if(n.los&&Math.random()<.4)startDuel(n,false);else n.calm=now+8}}
+  }}
+
+// ================= TIME =================
+let lastHour=Math.floor(S.minute/60);
+function houseCup(){const order=HK.slice().sort((a,b)=>S.points[b]-S.points[a]),w=order[0];S.cups[w]=(S.cups[w]||0)+1;const mine=S.house?order.indexOf(S.house)+1:0;
+  const rows=order.map((h,i)=>'<div class="hrow'+(h===S.house?" me":"")+'"><i style="background:'+HOUSES[h].c+'"></i><span>'+(i+1)+". "+HOUSES[h].n+'</span><b>'+S.points[h]+'</b></div>').join("");
+  showCard('<h2>The House Cup</h2><div class="crest" style="color:'+HOUSES[w].c+'">The '+HOUSES[w].n+' win</div><div style="margin:0 0 14px">'+rows+'</div><p>'+(S.house===w?"Your house takes the cup. The whole "+HOUSES[w].n+" table is on its feet. ":S.house?"Your house finished "+["","first","second","third","fourth"][mine]+". There's always next term. ":"")+"Points reset for the new term. Next cup: end of day "+(S.day+10)+'.</p><div class="row"><button class="primary" id="cupok">Start the new term</button></div>');
+  $("cupok").onclick=()=>hideCard();HK.forEach(h=>S.points[h]=0);drawBoard();save()}
+function tickTime(dt){S.minute+=dt*.75;const m=S.minute;
+  if(m>=DIN.start-20&&m<DIN.start&&!S.att.dinWarn){S.att.dinWarn=true;toast("Dinner is at "+fmt(DIN.start)+" in the Grand dining hall.")}
+  if(m>=DIN.start&&m<DIN.end&&!S.att.dinOn){S.att.dinOn=true;toast("Dinner is served in the Grand dining hall. Sit at your house table to eat.")}
+  if(m>=DIN.end&&!S.att.dinOff){S.att.dinOff=true;toast("Dinner is over. Curfew at 8:00 pm.")}
+  CLASSES.forEach((c,i)=>{const st=c.h*60;
+    if(m>=st-20&&m<st&&!S.att.warned.includes(i)){S.att.warned.push(i);if(S.house)toast(c.s+" starts at "+fmt(st)+" in the "+R[c.room].n+".")}
+    if(m>=st+60&&!S.att.ended.includes(i)){S.att.ended.push(i);if(lesson&&lesson.idx===i)failLesson();if(S.house&&!S.att.checked.includes(i))award(S.house,-5,"skipped "+c.s)}});
+  const h=Math.floor(m/60);if(h!==lastHour){lastHour=h;HK.forEach(k=>{if(k!==S.house)S.points[k]=Math.max(0,S.points[k]+Math.floor(rand(-3,8)))});drawBoard()}
+  if(m>=1200){if(S.day%10===0)houseCup();else{const lead=HK.slice().sort((a,b)=>S.points[b]-S.points[a])[0];toast("Curfew. The "+HOUSES[lead].n+" lead the house cup after day "+S.day+".")}S.day++;S.minute=480;lastHour=8;S.att={day:S.day,checked:[],ended:[],warned:[]};save()}}
+
+// ================= HUD =================
+const mmc=$("mmc"),mx=mmc.getContext("2d");mx.imageSmoothingEnabled=false;const MB={x0:X("light")-16,x1:X("lake")+16,z0:Z("star")-16,z1:Z("road")+16};
+function mmP(x,z){const s=mmc.width/Math.max(MB.x1-MB.x0,MB.z1-MB.z0);return[Math.round((x-MB.x0)*s+(mmc.width-(MB.x1-MB.x0)*s)/2),Math.round((z-MB.z0)*s+(mmc.height-(MB.z1-MB.z0)*s)/2),s]}
+const ZC={common:"#B49A6A",hall:"#9AA48E",tower:"#8C9BB0",ground:"#8FA772",under:"#A08A72",hidden:"#D2AF4E"};
+function mmDot(x,z,col,ring){const[a,b]=mmP(x,z);mx.fillStyle="#fff";mx.fillRect(a-5,b-5,10,10);mx.fillStyle=col;mx.fillRect(a-4,b-4,8,8);if(ring){mx.strokeStyle=col;mx.lineWidth=2;const r=8+(now*10)%8;mx.strokeRect(a-r,b-r,r*2,r*2)}}
+function drawMini(){const W=mmc.width;mx.clearRect(0,0,W,W);mx.fillStyle="#1a1d24";mx.fillRect(0,0,W,W);
+  const vis=new Set(S.seen);S.seen.forEach(k=>nbrs(k).forEach(n=>vis.add(n)));
+  CORR.forEach(c=>{if(!on(c.e)||!(S.seen.includes(c.e[0])||S.seen.includes(c.e[1])))return;const[a,b,s]=mmP(c.r.x0,c.r.z0);mx.fillStyle="#bdb7a6";mx.fillRect(a,b,Math.max(1,(c.r.x1-c.r.x0)*s),Math.max(1,(c.r.z1-c.r.z0)*s))});
+  const cc=curClass(),ct=cc>=0?CLASSES[cc].room:(dinnerOn()?"refect":null);
+  Object.keys(R).forEach(k=>{if(!vis.has(k))return;const h=half(k),[a,b,s]=mmP(X(k)-h,Z(k)-h);if(S.seen.includes(k)){mx.fillStyle=R[k].house?HOUSES[R[k].house].c:ZC[R[k].z];mx.fillRect(a,b,h*2*s,h*2*s)}else{mx.strokeStyle="#cfc9b8";mx.lineWidth=1;mx.strokeRect(a+.5,b+.5,h*2*s-1,h*2*s-1)}});
+  {const gd=goalDot();if(gd)mmDot(gd.x,gd.z,gd.col,true)}
+  const[px,pz]=mmP(P.x,P.z);mx.save();mx.translate(px,pz);mx.rotate(Math.atan2(P.ax,-P.az));mx.fillStyle="#fff";mx.beginPath();mx.moveTo(0,-7);mx.lineTo(5,6);mx.lineTo(0,3);mx.lineTo(-5,6);mx.closePath();mx.fill();mx.restore()}
+function updHud(){updNext();updSinfo();$("clock").textContent="Day "+S.day+", "+fmt(S.minute);
+  const cc=curClass();let t="";if(cc>=0){const c=CLASSES[cc];t=S.att.checked.includes(cc)?(lesson&&lesson.idx===cc?"In "+c.s+": "+lesson.hits+" of "+lesson.need+" targets":c.s+" done for today"):c.s+" is on now in the "+R[c.room].n+" (until "+fmt(c.h*60+60)+")"}
+  else{const nx=CLASSES.find(c=>c.h*60>S.minute);t=nx?"Next: "+nx.s+" at "+fmt(nx.h*60)+", "+R[nx.room].n:dinnerOn()?(S.att.ate?"Dinner until "+fmt(DIN.end)+". You already ate.":"Dinner is served in the Grand dining hall until "+fmt(DIN.end)):S.minute<DIN.start?"Dinner at "+fmt(DIN.start)+" in the Grand dining hall":"Dinner is over. Sleep in your dormitory (green dot) to skip to morning."}
+  if(!S.house)t="Go to the sorting book in the Foyer of echoes (red dot)";else if(NEXT)t="Next: "+(NEXT.key==="din"?"Dinner":NEXT.name)+" at "+fmt(NEXT.start)+", follow the red dot";$("cls").textContent=t;$("obj").textContent=!S.house?"Find the sorting book in the Foyer of echoes":(S.spells.length<2?"Attend a class to learn your first new spell":"");
+  const r=roomAt(P.x,P.z);$("room").textContent=r?(S.seen.includes(r)?R[r].n:"Unknown"):"Passage";
+  $("hp").classList.toggle("show",P.hp<99.5||NPCS.some(n=>n.state==="duel"));$("hpn").textContent=Math.ceil(P.hp);$("hpf").style.width=Math.max(0,P.hp)+"%";$("hpl").textContent=S.fedDay>=S.day?"Health (well fed)":"Health";
+  [...$("bar").children].forEach(b=>{const id=b.dataset.id,cd=(P.cds[id]||0)-now;b.querySelector(".cd").style.height=cd>0?Math.min(100,cd/SPX(id,plv(id)).cd*100)+"%":"0"});
+  const U=coarse?"Tap Use":"Press E";let pr="";const bdn=nearBed();
+  if(bdn)pr=S.minute>=DIN.end?U+" to sleep until morning":"Your bed. You can sleep after dinner.";else if(P.seated)pr="Move to stand up";else if(nearSeat())pr=U+" to sit with your house";
+  else if(Math.hypot(P.x-BOOK[0],P.z-BOOK[1])<2.6)pr=U+" to "+(S.house?"look at":"open")+" the sorting book";
+  else if(FIRES.some(f=>Math.hypot(P.x-f.x,P.z-f.z)<3&&R[f.k].house===S.house))pr=U+" to rest by the fire";
+  else if(NPCS.some(n=>n.staff&&Math.hypot(P.x-n.x,P.z-n.z)<2.2))pr=U+" to talk to "+NPCS.find(n=>n.staff&&Math.hypot(P.x-n.x,P.z-n.z)<2.2).nm;
+  else if(secretPrompt(U))pr=secretPrompt(U);
+  else{const tch=nearT();if(tch)pr=U+" to talk to "+CLASSES[tch.i].prof;else{const b=BLOCK.find(b=>!b.open&&Math.hypot(P.x-b.x,P.z-b.z)<3.5);if(b)pr=lockMsg(b.e[2])}}
+  $("prompt").textContent=pr;drawMini()}
+
+let bannerT=0;function showBanner(t,sub){$("banner").querySelector(".t").textContent=t;$("banner").querySelector(".s").textContent=sub;$("banner").classList.add("on");clearTimeout(bannerT);bannerT=setTimeout(()=>$("banner").classList.remove("on"),sub?3200:1800)}
+// door signs
+const DL=[];for(let i=0;i<4;i++){const d=document.createElement("div");d.className="dl";d.style.display="none";$("doorlabels").appendChild(d);DL.push(d)}
+const ARROW={N:"\u2191",S:"\u2193",E:"\u2192",W:"\u2190"};
+function updDoorLabels(){const r=roomAt(P.x,P.z);let i=0;if(r){nbrs(r).forEach(nb=>{if(i>=4)return;const e=E.find(e=>e.includes(r)&&e.includes(nb)),d=dirTo(r,nb),[x,z]=doorPt(r,nb),[a,b]=scr(x+DV[d][0]*-.8,z+DV[d][1]*-.8);
+    if(a<10||a>IW-10||b<10||b>IH-4)return;const lk=e[2]&&!canOpen(e[2]),seen=S.seen.includes(nb),el=DL[i++];el.style.display="";el.className="dl"+(seen?"":" q");
+    const txt=(d==="W"?ARROW.W+" ":"")+(d==="N"?ARROW.N+" ":"")+(seen?R[nb].n:"Unexplored")+(lk?" (locked)":"")+(d==="E"?" "+ARROW.E:"")+(d==="S"?" "+ARROW.S:"");if(el.textContent!==txt)el.textContent=txt;
+    el.style.transform="translate("+(a*SC)+"px,"+(b*SC)+"px) translate("+(d==="W"?"0":d==="E"?"-100%":"-50%")+","+(d==="N"?"0":d==="S"?"-100%":"-50%")+")"})}
+  for(;i<4;i++)DL[i].style.display="none"}
+// full map
+let mapOpen=false,wasModal=false;
+function toggleMap(){mapOpen=!mapOpen;$("bmcap").textContent="Secrets found: "+S.secrets.filter(x=>SECRETS_ALL.includes(x)).length+" of "+SECRETS_ALL.length+". Press M or tap to close.";$("bigmap").classList.toggle("on",mapOpen);if(mapOpen){wasModal=modal;modal=true;drawBigMap()}else modal=wasModal}
+function drawBigMap(){const c=$("bmc"),x=c.getContext("2d"),W=c.width,s=W/Math.max(MB.x1-MB.x0,MB.z1-MB.z0),ox=(W-(MB.x1-MB.x0)*s)/2,oz=(W-(MB.z1-MB.z0)*s)/2,M=(a,b)=>[(a-MB.x0)*s+ox,(b-MB.z0)*s+oz];
+  x.fillStyle="#1a1d24";x.fillRect(0,0,W,W);const vis=new Set(S.seen);S.seen.forEach(k=>nbrs(k).forEach(n=>vis.add(n)));
+  CORR.forEach(cr=>{if(!on(cr.e)||!(S.seen.includes(cr.e[0])||S.seen.includes(cr.e[1])))return;const[a,b]=M(cr.r.x0,cr.r.z0);x.fillStyle=cr.e[2]&&!canOpen(cr.e[2])?"#8a5a5a":"#bdb7a6";x.fillRect(a,b,Math.max(2,(cr.r.x1-cr.r.x0)*s),Math.max(2,(cr.r.z1-cr.r.z0)*s))});
+  const cc=curClass(),ct=cc>=0?CLASSES[cc].room:(dinnerOn()?"refect":null);x.textAlign="center";x.textBaseline="middle";
+  Object.keys(R).forEach(k=>{if(!vis.has(k))return;const h=half(k),[a,b]=M(X(k)-h,Z(k)-h),w=h*2*s;const seen=S.seen.includes(k);
+    if(seen){x.fillStyle=R[k].house?HOUSES[R[k].house].c:ZC[R[k].z];x.fillRect(a,b,w,w)}else{x.strokeStyle="#cfc9b8";x.setLineDash([4,3]);x.lineWidth=1.5;x.strokeRect(a+.5,b+.5,w-1,w-1);x.setLineDash([])}
+    if(k===ct){x.strokeStyle="#ffd36a";x.lineWidth=3;x.strokeRect(a-2,b-2,w+4,w+4)}
+    x.fillStyle=seen?"#16140f":"#cfc9b8";const name=seen?R[k].n:"?",words=name.split(" ");let lines=[name],fs=12;
+    for(fs=12;fs>=10;fs--){x.font="600 "+fs+"px 'Pixelify Sans', monospace";if(x.measureText(name).width<w-4){lines=[name];break}const h2=Math.ceil(words.length/2),l1=words.slice(0,h2).join(" "),l2=words.slice(h2).join(" ");lines=[l1,l2];if(Math.max(x.measureText(l1).width,x.measureText(l2).width)<w-4)break}
+    lines.forEach((ln,li)=>x.fillText(ln,a+w/2,b+w/2+(li-(lines.length-1)/2)*(fs+1)))});
+  const dot=(px,pz,col)=>{const[a,b]=M(px,pz);x.fillStyle="#fff";x.fillRect(a-7,b-7,14,14);x.fillStyle=col;x.fillRect(a-5,b-5,10,10)};
+  const gd=goalDot();if(gd)dot(gd.x,gd.z,gd.col);
+  const[pa,pb]=M(P.x,P.z);x.save();x.translate(pa,pb);x.rotate(Math.atan2(P.ax,-P.az));x.fillStyle="#fff";x.strokeStyle="#000";x.lineWidth=2;x.beginPath();x.moveTo(0,-11);x.lineTo(8,9);x.lineTo(0,4);x.lineTo(-8,9);x.closePath();x.stroke();x.fill();x.restore();
+  x.textAlign="left";x.font="13px 'Pixelify Sans', monospace";if(gd){x.fillStyle=gd.col;x.fillRect(12,W-24,10,10);x.fillStyle="#ECE6D6";x.fillText(gd.col==="#22dd55"?"Your dormitory":"Where to go next",28,W-19)}}
+// ================= RENDER =================
+const dark=document.createElement("canvas"),dg=dark.getContext("2d");
+function scr(x,z){return[P8(x)-offX,P8(z)-offY]}
+function drawSprite(e,variant,seated,downed){const s=e.spr,fr=s.f[variant+e.dir+(e.step||0)],sx=P8(e.x),sy=P8(e.z),x0=sx-6,y0=sy-s.H+1;
+  if(downed){g.save();g.translate(sx,sy-3);g.rotate(Math.PI/2);g.drawImage(s.f[variant+"down0"],-s.H+4,-6);g.restore();return}
+  g.fillStyle="rgba(0,0,0,.28)";g.fillRect(sx-4,sy,8,2);g.fillRect(sx-3,sy-1,6,1);
+  if(seated){const hh=s.off+12;g.drawImage(fr,0,0,s.W,hh,x0,y0+3,s.W,hh)}else g.drawImage(fr,x0,y0)}
+function drawWorld(t){
+  const cx=P.x,cz=P.z-1;offX=Math.round(cx*PPM-IW/2);offY=Math.round(cz*PPM-IH/2);
+  g.fillStyle="#2c5a7e";g.fillRect(0,0,IW,IH);
+  const ix0=Math.floor(offX/CSZ),iy0=Math.floor(offY/CSZ),ix1=Math.floor((offX+IW)/CSZ),iy1=Math.floor((offY+IH)/CSZ);
+  for(let iy=iy0;iy<=iy1;iy++)for(let ix=ix0;ix<=ix1;ix++)g.drawImage(getChunk(ix,iy),ix*CSZ-offX,iy*CSZ-offY);
+  g.save();g.translate(-offX,-offY);
+  const vis=(x,z,m=4)=>{const[a,b]=scr(x,z);return a>-m*PPM&&a<IW+m*PPM&&b>-m*PPM&&b<IH+m*PPM};
+  // blockers & secret wall
+  BLOCK.forEach(b=>{if(b.open||!vis(b.x,b.z))return;const w=b.ns?4:.5,d=b.ns?.5:4,t2=b.e[2];
+    if(t2==="lantern")rectC(g2,b.x,b.z,w,d,"#000");else if(t2==="key"){rectC(g2,b.x,b.z,w,d,"#2a2c32");for(let i=-1.6;i<=1.6;i+=.4)rectC(g2,b.x+(b.ns?i:0),b.z+(b.ns?0:i),.13,.13,"#6a6e78");rectC(g2,b.x,b.z,.3,.3,"#d9ad45")}
+    else if(t2.startsWith("house:")){rectC(g2,b.x,b.z,w,d,"#3a2a1c");rectC(g2,b.x,b.z,b.ns?1.4:.5,b.ns?.5:1.4,HOUSES[t2.slice(6)].c)}else rectC(g2,b.x,b.z,w,d,"#9fd2ec")});
+  if(!SECRET.c.off&&vis(SECRET.x,SECRET.z))rectC(g2,SECRET.x,SECRET.z,4,.6,"#8e877c");
+  CRACKS.forEach(k=>{if(k.c.off||!vis(k.x,k.z))return;const st=WS[k.style],w=k.ns?4:.6,d=k.ns?.6:4;c2rect(k.x-w/2,k.z-d/2,w,d,st.top);if(k.ns){rect(g2,k.x-w/2,k.z+d/2,w,st.fh,st.face)}const col="#2a2622";[[-1.2,-.1],[-.6,.1],[0,-.1],[.5,.1],[1.1,-.05]].forEach(([a,b2],i)=>rect(g2,k.x+(k.ns?a:b2),k.z+(k.ns?b2:a),k.ns?.4:.13,k.ns?.13:.4,col))});
+  COINS.forEach(c=>{if(S.secrets.includes(c.id)||Math.hypot(c.x-P.x,c.z-P.z)>7)return;rect(g2,c.x-.13,c.z-.13,.26,.26,"#d9ad45");if(Math.sin(t*4+c.x)>.7)rect(g2,c.x-.05,c.z-.25,.13,.13,"#ffffff")});
+  // floor-level dynamic: lantern pickups, food, orbs base
+  PICK.forEach(p=>{if(S.items.includes(p.it)||!vis(p.x,p.z))return;const bob=Math.sin(t*3)*.15;pc(g2,p.x,p.z+.3,.35,"rgba(0,0,0,.25)");if(p.it==="lantern"){pc(g2,p.x,p.z-.4+bob,.32,"#ffe08a");rectC(g2,p.x,p.z-.8+bob,.1,.25,"#444")}else if(p.it==="key"){rectC(g2,p.x,p.z-.5+bob,.15,.6,"#d9ad45");pring(g2,p.x,p.z-.9+bob,.22,"#d9ad45")}else pc(g2,p.x,p.z-.4+bob,.3,"#9fd2ec")});
+  if(dinnerOn())FOODS.forEach(f=>{if(!vis(f.x,f.z))return;pc(g2,f.x,f.z,.3,"#c9ccd2");if(f.k===0)pell(g2,f.x,f.z,.22,.15,"#7a3e1c");else if(f.k===1){pell(g2,f.x-.1,f.z,.18,.08,"#c8975a");pell(g2,f.x+.12,f.z+.05,.15,.08,"#b8874a")}else if(f.k===2)[["#b3261e",-.1,0],["#8db33a",.1,.05],["#5a2a6a",0,-.1],["#e0a030",.05,.12]].forEach(([c,a,b])=>pc(g2,f.x+a,f.z+b,.08,c));else pc(g2,f.x,f.z,.2,"#d6a24e");rectC(g2,f.x+.5,f.z-.55,.1,.1,"#d9ad45");rectC(g2,f.x+.5,f.z+.55,.1,.1,"#d9ad45")});
+  // entities y-sorted
+  const ents=[];NPCS.forEach(n=>{if(vis(n.x,n.z))ents.push({z:n.z,f:()=>{const v=n.frozen>now?"i":n.hitT>now?"w":"n";drawSprite(n,v,n.seated,n.state==="down");if(n.ward>now)pring(g2,n.x,n.z-1,1,"#8fd0ff")}})});
+  TEACH.forEach(tc=>{if(vis(tc.dx,tc.dz))ents.push({z:tc.dz,f:()=>drawSprite({spr:tc.spr,x:tc.dx,z:tc.dz,dir:tc.dir,step:0},"n",tc.sit,false)})});
+  ents.push({z:P.z,f:()=>{drawSprite(P,P.frozen>now?"i":hurtT>0?"w":"n",P.seated,false);if(P.ward>now)pring(g2,P.x,P.z-1,1,"#8fd0ff")}});
+  ents.sort((a,b)=>a.z-b.z).forEach(e=>e.f());
+  // lesson orbs
+  if(lesson)lesson.orbs.forEach(o=>{if(o.hit)return;const y=1.6+Math.sin(t*2+o.x)*.1;pc(g2,o.x,o.z,.3,"rgba(0,0,0,.25)");pc(g2,o.x,o.z-y,.45,lesson.col);pring(g2,o.x,o.z-y,.6+Math.sin(t*6)*.08,"#ffffff")});
+  // lanterns, wisps, sails, mist
+  LANTERNS.forEach(l=>{if(vis(l.x,l.z))pc(g2,l.x,l.z-5-Math.sin(t*.8+l.p)*.4,.28,"#ffe1a0")});
+  WISPS.forEach(w=>{if(vis(w.x,w.z))pc(g2,w.x+Math.sin(t*.7+w.p)*1.5,w.z-2+Math.cos(t*.9+w.p),.15,"#bfffe8")});
+  SAILS.forEach(s=>{if(!vis(s.x,s.z,6))return;const a=P8(s.x),b=P8(s.z);g.save();g.translate(a,b);g.rotate(t*.6);g.fillStyle="#e8e2d4";for(let i=0;i<4;i++){g.rotate(Math.PI/2);g.fillRect(-2,-26,4,22)}g.restore()});
+  MISTS.forEach(m=>{if(vis(m.x,m.z,5))pell(g2,m.x+Math.sin(t*.25+m.p)*1.2,m.z,3.6,1.4,"rgba(220,228,236,.16)")});
+  // projectiles & fx
+  PROJ.forEach(p=>{if(!vis(p.x,p.z))return;pc(g2,p.x,p.z,p.r*1.8,"rgba(255,255,255,.18)");pc(g2,p.x,p.z,Math.max(.14,p.r),p.col)});
+  FX.forEach(f=>{const k=Math.min(1,f.t/.3);pring(g2,f.x,f.z,.3+f.r*k,"rgba("+f.col+","+(.8*(1-k))+")",2)});
+  g.restore();
+}
+const g2=g;// alias for helpers that take a context
+function c2rect(x,z,w,d,pat){prect(g2,x,z,w,d,pat)}
+function lightingOverlay(t){const m=S.minute,r=roomAt(P.x,P.z)||(corrAt(P.x,P.z)?corrAt(P.x,P.z).e[0]:null);
+  let a=m<17*60?0:m<19*60?(m-17*60)/120*.25:.25+(m-19*60)/60*.25;if(r&&isUnder(r))a+=.5;else if(r&&castleK(r)&&!isOpen(r))a+=.12;a=Math.min(.82,a);if(a<.02)return;
+  if(dark.width!==IW||dark.height!==IH){dark.width=IW;dark.height=IH}dg.globalCompositeOperation="source-over";dg.clearRect(0,0,IW,IH);dg.fillStyle="rgba(8,10,26,"+a+")";dg.fillRect(0,0,IW,IH);dg.globalCompositeOperation="destination-out";
+  const hole=(x,z,rr,f)=>{const[a2,b2]=scr(x,z);const R2=rr*PPM*f;if(a2<-R2||a2>IW+R2||b2<-R2||b2>IH+R2)return;const gr=dg.createRadialGradient(a2,b2,0,a2,b2,R2);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(1,"rgba(0,0,0,0)");dg.fillStyle=gr;dg.fillRect(a2-R2,b2-R2,R2*2,R2*2)};
+  hole(P.x,P.z-1,6,1);const pr=roomAt(P.x,P.z),pl=pr&&isLow(pr);LIGHTS.forEach((l,i)=>{if(l.room===undefined)l.room=roomAt(l.x,l.z);const ok=l.room===pr||(!l.room&&Math.hypot(l.x-P.x,l.z-P.z)<10)||(pl&&l.room&&isLow(l.room));if(ok)hole(l.x,l.z,l.r,l.fl?1+Math.sin(t*9+i)*.06:1)});PROJ.forEach(p=>hole(p.x,p.z,2.5,1));
+  g.drawImage(dark,0,0)}
+function glows(t){g.globalCompositeOperation="lighter";TORCHES.forEach((tc,i)=>{const[a,b]=scr(tc.x,tc.z);if(a<-20||a>IW+20||b<-20||b>IH+20)return;const f=.85+Math.sin(t*11+i*1.7)*.15;g.fillStyle="rgba(255,150,60,"+(.35*f)+")";g.fillRect(a-1,b-2,3,3);g.fillStyle="rgba(255,230,150,"+(.9*f)+")";g.fillRect(a,b-1,1,1)});g.globalCompositeOperation="source-over"}
+function marker(x,z,col,t,label){const[a,b]=scr(x,z);const y=b-26+Math.round(Math.sin(t*3)*2);
+  if(a>=8&&a<=IW-8&&y>=8&&b<=IH+8){g.fillStyle="#000";g.fillRect(a-4,y-4,9,9);g.fillStyle=col;g.fillRect(a-3,y-3,7,7);g.fillStyle="rgba(255,255,255,.8)";g.fillRect(a-2,y-2,2,2);const r=6+Math.floor((t*8)%5);g.strokeStyle=col;g.lineWidth=1;g.strokeRect(a-r+.5,b-r/2+.5,r*2,r)}
+  else{const cx0=IW/2,cy0=IH/2,dx=a-cx0,dy=y-cy0,s=Math.min((IW/2-14)/Math.abs(dx||1),(IH/2-14)/Math.abs(dy||1));const ex=cx0+dx*s,ey=cy0+dy*s,ang=Math.atan2(dy,dx);
+    g.save();g.translate(Math.round(ex),Math.round(ey));g.rotate(ang);g.fillStyle="#000";g.beginPath();g.moveTo(9,0);g.lineTo(-5,-7);g.lineTo(-5,7);g.closePath();g.fill();g.fillStyle=col;g.beginPath();g.moveTo(7,0);g.lineTo(-4,-5);g.lineTo(-4,5);g.closePath();g.fill();g.restore()}}
+function render(t){drawWorld(t);glows(t);lightingOverlay(t);
+  {const gd=goalDot();if(gd)marker(gd.x,gd.z,gd.col==="#22dd55"?"#2aee5a":"#ff2a2a",t)}
+  if(hurtT>0){g.fillStyle="rgba(200,30,30,"+(hurtT*1.2)+")";g.fillRect(0,0,IW,3);g.fillRect(0,IH-3,IW,3);g.fillRect(0,0,3,IH);g.fillRect(IW-3,0,3,IH)}
+  if(P.frozen>now){g.fillStyle="rgba(150,210,255,.15)";g.fillRect(0,0,IW,IH)}
+  if(!coarse&&mouse.on){const a=Math.round(mouse.sx),b=Math.round(mouse.sy);g.fillStyle="#fff";g.fillRect(a-4,b,3,1);g.fillRect(a+2,b,3,1);g.fillRect(a,b-4,1,3);g.fillRect(a,b+2,1,3)}}
+function updLabels(){updDoorLabels();NPCS.forEach(n=>{const d=Math.hypot(n.x-P.x,n.z-P.z);if((d>9&&n.state!=="duel")||(!n.los&&n.state!=="duel")){n.lab.style.display="none";return}const[a,b]=scr(n.x,n.z);if(a<0||a>IW||b<0||b>IH+20){n.lab.style.display="none";return}
+  n.lab.style.display="";n.lab.style.transform="translate("+(a*SC)+"px,"+((b-(n.state==="down"?8:n.spr.H+2))*SC)+"px) translate(-50%,-100%)";
+  const html=n.nm+"<small>"+(n.staff?n.title:HOUSES[n.h].n)+(n.state==="down"?", knocked out":"")+"</small>"+(n.state==="duel"?'<div class="bar"><i style="width:'+Math.max(0,n.hp/n.max*100)+'%"></i></div>':"");if(n.lab._h!==html){n.lab._h=html;n.lab.innerHTML=html}})}
+
+// ================= LOOP =================
+let hudT=0,saveT=0,labelLos=0,lastT=performance.now();
+function update(dt){now+=dt;tickTime(dt);
+  let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f-=1;if(keys.KeyS||keys.ArrowDown)f+=1;if(keys.KeyD||keys.ArrowRight)s+=1;if(keys.KeyA||keys.ArrowLeft)s-=1;if(joy.id!==null){s+=joy.ax;f+=joy.ay}
+  if(P.seated&&(Math.hypot(f,s)>0||!dinnerOn()))standUp();
+  const l=Math.hypot(f,s);if(l>0&&P.frozen<now&&!P.seated){const sp=(keys.ShiftLeft||keys.ShiftRight?9:5.2)*Math.min(1,l)/l*dt;moveC(P,s*sp,f*sp);P.ph+=sp*3.2;P.step=Math.floor(P.ph)%2?1:2;if(coarse||!mouse.on){P.ax=s/l;P.az=f/l;P.dir=dirOf(s,f)}}else P.step=0;
+  if(!coarse&&mouse.on&&!P.seated){const wx=(mouse.sx+offX)/PPM,wz=(mouse.sy+offY)/PPM,dx=wx-P.x,dz=wz-(P.z-.9),ll=Math.hypot(dx,dz)||1;P.ax=dx/ll;P.az=dz/ll;P.dir=dirOf(dx,dz)}
+  guard(P);
+  if(P.hot>now)P.hp=Math.min(100,P.hp+6*dt);if(now-lastHurt>6&&P.hp<100)P.hp=Math.min(100,P.hp+dt*(S.fedDay>=S.day?9:4));
+  const r=roomAt(P.x,P.z);if(r&&r!==S.cur){S.cur=r;const isNew=!S.seen.includes(r);showBanner(R[r].n,isNew?"New place. "+R[r].d:"");if(isNew){S.seen.push(r);if(S.house)award(S.house,2,"explored the "+R[r].n);
+      if(r==="lib"&&!S.found){S.found=true;syncLocks();toast("Something shifted behind the Clocktower's north wall.")}if(r==="star")foundSecret("star","The Star chart room, hidden behind the clock.",20)}save()}
+  COINS.forEach(c=>{if(!S.secrets.includes(c.id)&&Math.hypot(P.x-c.x,P.z-c.z)<1.3)foundSecret(c.id,"A founder's coin.",10)});
+  PICK.forEach(p=>{if(!S.items.includes(p.it)&&Math.hypot(P.x-p.x,P.z-p.z)<1.8){S.items.push(p.it);toast("You picked up the "+ITEMS[p.it]+".");if(S.house)award(S.house,5,"found the "+ITEMS[p.it]);save()}});
+  BLOCK.forEach(b=>{if(!b.open&&canOpen(b.e[2])&&Math.hypot(P.x-b.x,P.z-b.z)<4){openBlock(b);toast(b.e[2].startsWith("house:")?"The door recognizes you and swings open.":"You used the "+ITEMS[b.e[2]]+". The way is open.")}});
+  NPCS.forEach(n=>updateNpc(n,dt));
+  NPCS.forEach(n=>{const d=Math.hypot(n.x-n.px,n.z-n.pz);n.px=n.x;n.pz=n.z;if(n.state==="down"||n.frozen>now||n.seated){n.step=0;return}if(d>.001){n.ph+=d*3.2;n.step=Math.floor(n.ph)%2?1:2}else n.step=0});
+  const tAt=dinnerOn();TEACH.forEach((tc,i)=>{if(tAt){tc.dx=X("refect")+STAFFX[i];tc.dz=Z("refect")-14.3;tc.dir="down";tc.sit=true}else{tc.dx=tc.x;tc.dz=tc.z;tc.sit=false;tc.dir=dirOf(X(CLASSES[i].room)-tc.x,Z(CLASSES[i].room)-tc.z)}});
+  labelLos-=dt;if(labelLos<=0){labelLos=.4;NPCS.forEach(n=>{if(n.state!=="duel"&&Math.hypot(n.x-P.x,n.z-P.z)<18)n.los=los(n.x,n.z,P.x,P.z)})}
+  if(lesson)lesson.orbs.forEach(o=>{if(o.orbit){o.x=o.cx+Math.cos(now*o.s+o.ph)*o.r;o.z=o.cz+Math.sin(now*o.s+o.ph)*o.r}});
+  for(let i=PROJ.length-1;i>=0;i--){const p=PROJ[i];p.x+=p.vx*dt;p.z+=p.vz*dt;p.life-=dt;let dead=p.life<=0||wallHit(p.x,p.z+.9),hitN=null;if(dead&&p.owner==="p"&&p.life>0){const ck=CRACKS.find(k=>!k.c.off&&Math.hypot(p.x-k.x,p.z+.9-k.z)<2.4);if(ck){foundSecret(ck.id,ck.id==="bookcase"?"A hidden passage between the Mirror library and the Warden's study.":"An old smugglers' tunnel from the Alchemy cellars to the Cliff stairs.",20);FX.push({x:ck.x,z:ck.z,t:0,r:2,col:"220,210,190"})}}
+    if(!dead&&p.owner==="p"){for(const n of NPCS){if(n.state==="down")continue;if(Math.hypot(p.x-n.x,p.z-(n.z-.9))<.6){hitNpc(n,p.id,p.vx,p.vz,p.lv);hitN=n;dead=true;break}}}
+    else if(!dead&&p.owner!=="p"&&Math.hypot(p.x-P.x,p.z-(P.z-.9))<.55){hitPlayer(p.id,p.owner,p.lv);hitN="player";dead=true}
+    if(dead){if(p.owner==="p"&&!hitN){const dm=DUMMIES.find(([a,b])=>Math.hypot(p.x-a,p.z+.9-b)<1);if(dm){gainXP(p.id,.25);FX.push({x:dm[0],z:dm[1]-1,t:0,r:.8,col:"255,240,200"})}}if(SPX(p.id,p.lv).splash&&p.life>0)explode(p.x,p.z+.9,p,hitN);PROJ.splice(i,1)}}
+  for(let i=FX.length-1;i>=0;i--){FX[i].t+=dt;if(FX[i].t>.3)FX.splice(i,1)}
+  if(hurtT>0)hurtT-=dt}
+function frame(){requestAnimationFrame(frame);const tn=performance.now(),dt=Math.min((tn-lastT)/1000,.05);lastT=tn;
+  if(running&&!modal)update(dt);flashT-=dt;const t=tn/1000;render(t);updLabels();
+  hudT-=dt;if(hudT<=0){hudT=.1;updHud()}if(running&&!modal){saveT-=dt;if(saveT<=0){saveT=5;S.hp=P.hp;save()}}}
+
+// ================= START =================
+if(S.att.day!==S.day)S.att={day:S.day,checked:[],ended:[],warned:[]};
+S.secrets.forEach(id=>openSecretPath(id));syncLocks();drawBoard();buildBar();syncMini();startScreen();frame();
+</script>
+</body>
+</html>
